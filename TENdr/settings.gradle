@@ -1,0 +1,2 @@
+rootProject.name='TENdr'
+include ':app'
