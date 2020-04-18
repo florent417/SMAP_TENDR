@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">TENdr</string>
     <string name="LOGIN">LOGIN</string>
+    <string name="WELCOME">WELCOME TO TENdr</string>
+    <string name="EmailHint">Email</string>
+    <string name="PasswordHint">Password</string>
+    <string name="AgeHint">Age</string>
+    <string name="firstname">Firstname</string>
+    <string-array name="Sex">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
 </resources>

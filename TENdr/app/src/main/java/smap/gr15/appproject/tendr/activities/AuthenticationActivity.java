@@ -19,6 +19,7 @@ import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
 
+// INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION & https://www.youtube.com/watch?v=7Yc3Pt37coM
 public class AuthenticationActivity extends AppCompatActivity {
 
     private static int RC_SIGN_IN = 1;
@@ -30,7 +31,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         Button signInButton = findViewById(R.id.LoginAuthenticationButton);
 
-        // HEAVILY INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,34 +41,10 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        checkForLoggedInUser();
+        //checkForLoggedInUser();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == RC_SIGN_IN)
-        {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if(resultCode == RESULT_OK)
-            {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Log.d("Firebase User", user.getUid());
-
-                redirectToMainActivity();
-            }
-            else{
-                try {
-                    Log.d(TAG_ERROR, response.getError().getMessage());
-                }catch (Exception e)
-                {
-                    Log.d(TAG_ERROR, "Most likely did not sign it and just clicked back");
-                }
-            }
-        }
-    }
 
     //Redirect to main Activity after successful Login
     private void redirectToMainActivity()
