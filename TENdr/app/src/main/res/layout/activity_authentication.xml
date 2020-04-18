@@ -7,7 +7,46 @@
     tools:context=".activities.AuthenticationActivity">
 
     <EditText
-        android:id="@+id/editText6"
+        android:id="@+id/CountryAuthenticationEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/Country"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="@+id/CityAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/CityAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/CityAuthenticationEditText" />
+
+    <EditText
+        android:id="@+id/CityAuthenticationEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/City"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="@+id/OccupationAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/OccupationAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/OccupationAuthenticationEditText" />
+
+    <EditText
+        android:id="@+id/OccupationAuthenticationEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/Occupation"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="@+id/FirstnameAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/FirstnameAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/FirstnameAuthenticationEditText" />
+
+    <EditText
+        android:id="@+id/FirstnameAuthenticationEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -15,18 +54,19 @@
         android:ems="10"
         android:hint="@string/firstname"
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="@+id/spinner"
-        app:layout_constraintStart_toStartOf="@+id/spinner"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintEnd_toEndOf="@+id/SexAuthenticationSpinner"
+        app:layout_constraintStart_toStartOf="@+id/SexAuthenticationSpinner"
+        app:layout_constraintTop_toBottomOf="@+id/SexAuthenticationSpinner" />
 
     <Button
         android:id="@+id/LoginAuthenticationButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="@string/LOGIN"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/CountryAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/CountryAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/CountryAuthenticationEditText" />
 
     <TextView
         android:id="@+id/WelcomeAuthenticationAcitivtyTextView"
@@ -39,7 +79,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editText3"
+        android:id="@+id/EmailAuthenticationEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -52,7 +92,7 @@
         app:layout_constraintTop_toBottomOf="@+id/WelcomeAuthenticationAcitivtyTextView" />
 
     <EditText
-        android:id="@+id/editText4"
+        android:id="@+id/PasswordAuthenticationEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -60,12 +100,12 @@
         android:ems="10"
         android:hint="@string/PasswordHint"
         android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="@+id/editText3"
-        app:layout_constraintStart_toStartOf="@+id/editText3"
-        app:layout_constraintTop_toBottomOf="@+id/editText3" />
+        app:layout_constraintEnd_toEndOf="@+id/EmailAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/EmailAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/EmailAuthenticationEditText" />
 
     <EditText
-        android:id="@+id/editText5"
+        android:id="@+id/AgeAuthenticationEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -73,18 +113,18 @@
         android:ems="10"
         android:hint="@string/AgeHint"
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="@+id/editText4"
-        app:layout_constraintStart_toStartOf="@+id/editText4"
-        app:layout_constraintTop_toBottomOf="@+id/editText4" />
+        app:layout_constraintEnd_toEndOf="@+id/PasswordAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/PasswordAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/PasswordAuthenticationEditText" />
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/SexAuthenticationSpinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:entries="@array/Sex"
-        app:layout_constraintEnd_toEndOf="@+id/editText5"
-        app:layout_constraintStart_toStartOf="@+id/editText5"
-        app:layout_constraintTop_toBottomOf="@+id/editText5" />
+        app:layout_constraintEnd_toEndOf="@+id/AgeAuthenticationEditText"
+        app:layout_constraintStart_toStartOf="@+id/AgeAuthenticationEditText"
+        app:layout_constraintTop_toBottomOf="@+id/AgeAuthenticationEditText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
