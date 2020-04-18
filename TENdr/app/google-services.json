@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "765100609789",
+    "firebase_url": "https://tendr-app-project.firebaseio.com",
+    "project_id": "tendr-app-project",
+    "storage_bucket": "tendr-app-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765100609789:android:bee18ed58aa978f53e6e94",
+        "android_client_info": {
+          "package_name": "smap.gr15.appproject.tendr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "765100609789-ae77plt186ias83bcmdbbhmv1ki78hsk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcHbzG-h5m0gxeUWBwOH2b5tepHAPkKio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "765100609789-ae77plt186ias83bcmdbbhmv1ki78hsk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
