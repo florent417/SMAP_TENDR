@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TENdr</string>
+    <string name="LOGIN">LOGIN</string>
 </resources>
