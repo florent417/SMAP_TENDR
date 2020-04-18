@@ -3,8 +3,11 @@ package smap.gr15.appproject.tendr.activities;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.services.MatchService;
 
 public class AuthenticationActivity extends AppCompatActivity {
 
