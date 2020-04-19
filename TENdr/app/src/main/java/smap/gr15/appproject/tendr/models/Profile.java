@@ -1,6 +1,8 @@
 package smap.gr15.appproject.tendr.models;
 
+import java.util.ArrayList;
 import java.util.List;
+import smap.gr15.appproject.tendr.utils.helpers;
 
 public class Profile {
     private String firstName;
@@ -10,20 +12,20 @@ public class Profile {
     private String city;
     private String country;
     private String gender;
-    private List<String> genderPreference;
+    private List<String> genderPreference = new ArrayList<>();
     private String email;
     private String password;
     private List<String> pictures;
 
     //This is used to create a new profile on first launch
-    public Profile(String firstName, int age, String occupation, String city, String country, String gender, List<String> genderPreference, String email, String password) {
+    public Profile(String firstName, int age, String occupation, String city, String country, String gender, String email, String password) {
         this.firstName = firstName;
         this.age = age;
         this.occupation = occupation;
         this.city = city;
         this.country = country;
         this.gender = gender;
-        this.genderPreference = genderPreference;
+        this.genderPreference.add(helpers.setGenderOpposite(gender));
         this.email = email;
         this.password = password;
     }
