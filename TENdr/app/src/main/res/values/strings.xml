@@ -9,6 +9,7 @@
     <string name="Occupation">Occupation</string>
     <string name="City">City</string>
     <string name="Country">Country</string>
+    <string name="SIGNUP">SIGN UP</string>
     <string-array name="Sex">
         <item>Male</item>
         <item>Female</item>

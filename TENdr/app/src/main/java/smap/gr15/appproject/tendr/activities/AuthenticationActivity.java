@@ -2,6 +2,7 @@ package smap.gr15.appproject.tendr.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Map;
+import java.util.Objects;
 
 import butterknife.BindInt;
 import butterknife.BindView;
@@ -29,7 +31,7 @@ import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
 
-// INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION & https://www.youtube.com/watch?v=7Yc3Pt37coM
+// INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION & https://www.youtube.com/watch?v=7Yc3Pt37coM & Firebase docs
 public class AuthenticationActivity extends AppCompatActivity {
 
     private static int RC_SIGN_IN = 1001;
@@ -90,9 +92,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        FirebaseAuth.getInstance().signOut();
-        //if(Auth.getCurrentUser() != null)
-        //    redirectToMainActivity();
+        checkForLoggedInUser();
     }
 
     private void registerProfile()
@@ -120,7 +120,8 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }
 
-        if(AgeFinal.isEmpty())
+        //To avoid yung creeps coming into our app or really really really old people
+        if(AgeFinal.isEmpty() || Integer.parseInt(AgeFinal) <= 17 || Integer.parseInt(AgeFinal) >= 110)
         {
             Age.setError(TAG_GENERAL_ERROR);
             Age.requestFocus();
@@ -168,17 +169,17 @@ public class AuthenticationActivity extends AppCompatActivity {
                                     CityFinal,
                                     CountryFinal,
                                     SexFinal,
-                                    null,
                                     EmailFinal,
                                     PasswordFinal
-
                             );
-                            Map<String, Profile> mapProfile;
+
                             
-                            firestore.collection(Globals.FIREBASE_Profiles_PATH).add(profile).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            firestore.collection(Globals.FIREBASE_Profiles_PATH).document(FirebaseAuth.getInstance().getCurrentUser().getUid()).set(profile).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
-                                public void onSuccess(DocumentReference documentReference) {
+                                public void onSuccess(Void aVoid) {
                                     Toast.makeText(AuthenticationActivity.this, TAG_CREATING_PROFILE_SUCCESS, Toast.LENGTH_LONG).show();
+
+                                    redirectToMainActivity();
                                 }
                             });
 
@@ -203,9 +204,16 @@ public class AuthenticationActivity extends AppCompatActivity {
     //Check for Logged In User
     private void checkForLoggedInUser()
     {
-        if(!FirebaseAuth.getInstance().getCurrentUser().getUid().isEmpty())
+        try {
+            if(!FirebaseAuth.getInstance().getCurrentUser().getUid().isEmpty())
+            {
+                Log.d("NOTEMPTY", "USER");
+                redirectToMainActivity();
+            }
+        }catch (Exception e)
         {
-            redirectToMainActivity();
+            Log.d("EMPTY", "USER");
+            e.printStackTrace();
         }
     }
 

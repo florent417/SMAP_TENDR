@@ -18,7 +18,7 @@ public class Profile {
     private List<String> pictures;
 
     //This is used to create a new profile on first launch
-    public Profile(String firstName, int age, String occupation, String city, String country, String gender, List<String> genderPreference, String email, String password) {
+    public Profile(String firstName, int age, String occupation, String city, String country, String gender, String email, String password) {
         this.firstName = firstName;
         this.age = age;
         this.occupation = occupation;
