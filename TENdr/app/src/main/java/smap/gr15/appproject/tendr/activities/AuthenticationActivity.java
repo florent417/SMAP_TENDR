@@ -92,6 +92,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        Auth.signOut(); //REMOVE WHEN NOT TESTING
         checkForLoggedInUser();
     }
 
@@ -215,6 +216,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d("EMPTY", "USER");
             e.printStackTrace();
         }
+    }
+
+    public void onClick(View v){
+        // Create Sign in forms for exiting user through AUTH here
+        Log.d("IM CLICKED", "CLICKED");
     }
 
 
