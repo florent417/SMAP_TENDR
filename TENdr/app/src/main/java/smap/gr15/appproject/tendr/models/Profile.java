@@ -30,6 +30,7 @@ public class Profile {
         this.password = password;
     }
 
+    public Profile(){}
     public String getFirstName() {
         return firstName;
     }
