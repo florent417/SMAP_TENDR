@@ -3,11 +3,13 @@ package smap.gr15.appproject.tendr.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,6 +20,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,7 @@ import smap.gr15.appproject.tendr.utils.Globals;
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    FirebaseStorage storage = FirebaseStorage.getInstance();
     String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
     Profile testProf = null;
 
@@ -43,6 +49,8 @@ public class ProfileActivity extends AppCompatActivity {
     EditText cityEditTxt;
     @BindView(R.id.saveBtn)
     Button saveBtn;
+    @BindView(R.id.profilePicture)
+    ImageView imgView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +58,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
+        testGetPic();
         testGetProfile();
         //testAddProfile();
     }
@@ -66,6 +75,20 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(ProfileActivity.this, "Great Succes!", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void testGetPic(){
+        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
+        StorageReference russianDateRef = storage.getReference(pathToTestPic);
+        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                String testPath = task.getResult().toString();
+                Log.d(TAG, "Got path to russian babes: " + testPath);
+                Picasso.get().load(testPath).into(imgView);
+            }
+        });
+
     }
 
     private void testGetProfile(){
