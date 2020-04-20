@@ -62,7 +62,7 @@
         android:id="@+id/LoginAuthenticationButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="@string/SIGNUP"
         app:layout_constraintEnd_toEndOf="@+id/CountryAuthenticationEditText"
         app:layout_constraintStart_toStartOf="@+id/CountryAuthenticationEditText"
@@ -126,5 +126,20 @@
         app:layout_constraintEnd_toEndOf="@+id/AgeAuthenticationEditText"
         app:layout_constraintStart_toStartOf="@+id/AgeAuthenticationEditText"
         app:layout_constraintTop_toBottomOf="@+id/AgeAuthenticationEditText" />
+
+    <TextView
+        android:id="@+id/UserLoginAuthenticationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/ALREADYUSER"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/LoginAuthenticationButton"
+        app:layout_constraintStart_toStartOf="@+id/LoginAuthenticationButton"
+        app:layout_constraintTop_toBottomOf="@+id/LoginAuthenticationButton"
+        android:onClick="onClick"
+        android:clickable="true"
+        android:focusable="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,17 +10,23 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,7 +37,7 @@ import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
 
-// INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION & https://www.youtube.com/watch?v=7Yc3Pt37coM & Firebase docs
+// INSPIRED FROM BRIANS VIDEO ABOUT AUTHENTICATION & https://www.youtube.com/watch?v=7Yc3Pt37coM & Firebase docs & Android docs
 public class AuthenticationActivity extends AppCompatActivity {
 
     private static int RC_SIGN_IN = 1001;
@@ -214,6 +220,43 @@ public class AuthenticationActivity extends AppCompatActivity {
         {
             Log.d("EMPTY", "USER");
             e.printStackTrace();
+        }
+    }
+
+    public void onClick(View v){
+        // Create Sign in forms for exiting user through AUTH here
+        Log.d("IM CLICKED", "CLICKED");
+
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.EmailBuilder().build());
+
+        startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), RC_SIGN_IN);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == RC_SIGN_IN)
+        {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if(resultCode == RESULT_OK)
+            {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                Log.d("Firebase User", user.getUid());
+
+                redirectToMainActivity();
+            }
+            else{
+                try {
+                    Log.d(TAG_ERROR, response.getError().getMessage());
+                }catch (Exception e)
+                {
+                    Log.d(TAG_ERROR, "Most likely did not sign it and just clicked back");
+                }
+            }
         }
     }
 
