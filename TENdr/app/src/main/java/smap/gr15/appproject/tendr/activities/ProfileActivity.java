@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.adapters.ProfileImageAdapter;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
 
@@ -49,8 +51,12 @@ public class ProfileActivity extends AppCompatActivity {
     EditText cityEditTxt;
     @BindView(R.id.saveBtn)
     Button saveBtn;
-    @BindView(R.id.profilePicture)
-    ImageView imgView;
+    // @BindView(R.id.profilePicture)
+    // ImageView imgView;
+
+    @BindView(R.id.gridViewTest)
+    GridView gridView;
+    ArrayList<String> imgUrls = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +64,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
-        testGetPic();
-        testGetProfile();
+        testGetPicGrid();
+
+        //testGetPic();
+        //testGetProfile();
         //testAddProfile();
     }
 
@@ -77,6 +85,27 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void testGetPicGrid(){
+        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
+        StorageReference russianDateRef = storage.getReference(pathToTestPic);
+        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                String testPath = task.getResult().toString();
+                imgUrls.add(testPath);
+                imgUrls.add(testPath);
+                imgUrls.add(testPath);
+                imgUrls.add(testPath);
+                ProfileImageAdapter adapter= new ProfileImageAdapter(getApplicationContext(), imgUrls);
+                gridView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                Log.d(TAG, "Got path to russian babes: " + testPath);
+            }
+        });
+
+    }
+
+    /*
     private void testGetPic(){
         String pathToTestPic = "pictures/date-russian-girl-site-review.png";
         StorageReference russianDateRef = storage.getReference(pathToTestPic);
@@ -90,6 +119,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
     }
+    */
 
     private void testGetProfile(){
 
