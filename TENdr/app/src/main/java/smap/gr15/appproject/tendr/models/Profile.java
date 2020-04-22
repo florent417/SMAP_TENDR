@@ -14,11 +14,13 @@ public class Profile {
     private String email;
     private String password;
     private List<String> pictures;
+    private List<String> matches;
 
     public Profile() {}
 
     //This is used to create a new profile on first launch
-    public Profile(String firstName, int age, String occupation, String city, String country, String gender, List<String> genderPreference, String email, String password) {
+    public Profile(String firstName, int age, String occupation, String city, String country, String gender,
+                   List<String> genderPreference, String email, String password, List<String> matches) {
         this.firstName = firstName;
         this.age = age;
         this.occupation = occupation;
@@ -28,6 +30,7 @@ public class Profile {
         this.genderPreference = genderPreference;
         this.email = email;
         this.password = password;
+        this.matches = matches;
     }
 
     public String getFirstName() {
@@ -117,6 +120,10 @@ public class Profile {
     public void setPictures(List<String> pictures) {
         this.pictures = pictures;
     }
+
+    public List<String> getMatches() { return matches; }
+
+    public void setMatches(List<String> matches) { this.matches = matches; }
 
 
     // TODO: Maybe add IG account

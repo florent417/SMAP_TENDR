@@ -16,8 +16,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import smap.gr15.appproject.tendr.models.Match;
 import smap.gr15.appproject.tendr.models.Profile;
@@ -25,10 +29,13 @@ import smap.gr15.appproject.tendr.models.Profile;
 public class MatchService extends Service {
     private String LOG = "MatchService LOG";
     private int MATCH_LIMIT = 10;
-    private LinkedList<Match> swipeableProfiles;
-    private List<Match> wantedMatches;
-    private LinkedList<Match> unwantedMatches;
-    private Match[] matches;
+    private String MATCHES_DB = "matches";
+    private String PROFILES_DB = "profiles";
+    private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
+    private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
+    private List<Profile> wantedMatches;
+    private LinkedList<Profile> unwantedMatches;
+    private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -49,7 +56,7 @@ public class MatchService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
-        getOwnProfileData("alexander8@hotmail.com");
+        fetchOwnProfileData("alexander8@hotmail.com"); // maybe there's firebase method for getting own id?
         // Now we have profile data. Use this to search for a number matches with matching
         // gender, compatible genderPreference, and same country.
 
@@ -70,22 +77,32 @@ public class MatchService extends Service {
         Log.d(LOG, "MatchService has been destroyed");
     }
 
+    // Should perhaps also have a broadcast method. Activities can get all matches at startup, and
+    // should instantly get updated if a new match happens
+    public List<Profile> getMatches() {
+        return successfulMatches;
+    }
+
+    public List<Profile> getSwipeableProfiles() {
+        return swipeableProfiles;
+    }
+
     private void initSwipeQueue() {
 
     }
 
-    private void getOwnProfileData(String profileKey) {
-        db.collection("profiles").document(profileKey)
+    private void fetchOwnProfileData(String profileKey) {
+        db.collection(PROFILES_DB).document(profileKey)
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
-                    Profile profile = document.toObject(Profile.class);
-
                     if (document.exists()) {
                         Log.d(LOG, "DocumentSnapshot data: " + document.getData());
-                        ownProfile = profile;
+                        ownProfile = document.toObject(Profile.class);
+                        fetchSuccessfulMatches(ownProfile.getMatches());
+                        fetchProfilesForSwiping(ownProfile);
                     } else {
                         Log.d(LOG, "No such document");
                     }
@@ -94,6 +111,58 @@ public class MatchService extends Service {
                 }
             }
         });
+    }
+
+    // It is not the size of the dataset we're querying, that is the primary factor for how long a
+    // query takes, rather it's the size of the data the query returns. Bandwith is the limiting factor.
+    // Source: https://medium.com/firebase-developers/why-is-my-cloud-firestore-query-slow-e081fb8e55dd
+    private void fetchSuccessfulMatches(List<String> matchIds) {
+        if (!matchIds.isEmpty()) {
+            db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+                    .whereIn("email", matchIds)
+                    .limit(MATCH_LIMIT)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                successfulMatches = new ArrayList<Profile>();
+                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                    Log.d(LOG, document.getId() + " => " + document.getData());
+                                    Profile matchedProfile = document.toObject(Profile.class);
+                                    successfulMatches.add(matchedProfile);
+                                }
+                            } else {
+                                Log.d(LOG, "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
+        }
+    }
+
+    // Currently has no smart algorithme to prefer people of same city, only matches base on same country
+    private void fetchProfilesForSwiping(Profile ownProfiles) {
+        db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+                .whereEqualTo("country", ownProfiles.getCountry())
+                .whereArrayContains("genderPreference", ownProfiles.getGender())
+                .limit(PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                Log.d(LOG, document.getId() + " => " + document.getData());
+                                Profile swipeableProfile = document.toObject(Profile.class);
+                                swipeableProfiles.add(swipeableProfile);
+                            }
+                            int i = 1;
+                        } else {
+                            Log.d(LOG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
     }
 
 }
