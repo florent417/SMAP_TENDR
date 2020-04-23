@@ -16,6 +16,10 @@ public class Profile {
     private String email;
     private String password;
     private List<String> pictures;
+    private List<String> matches;
+    private String userId;
+
+    public Profile() {}
 
     //This is used to create a new profile on first launch
     public Profile(String firstName, int age, String occupation, String city, String country, String gender, String email, String password) {
@@ -118,6 +122,13 @@ public class Profile {
         this.pictures = pictures;
     }
 
+    public List<String> getMatches() { return matches; }
+
+    public void setMatches(List<String> matches) { this.matches = matches; }
+
+    public String getUserId() { return userId; }
+
+    public void setUserId(String userId) { this.userId = userId; }
 
     // TODO: Maybe add IG account
     // TODO: Feature add points
