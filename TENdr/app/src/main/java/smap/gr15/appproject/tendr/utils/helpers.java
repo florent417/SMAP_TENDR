@@ -38,7 +38,6 @@ public class helpers {
             public void onClick(View v) {
                 if(context.getClass() != SettingsActivity.class)
                 {
-                    checkIfActivityisRunning(context);
                     Intent intent = new Intent(context, SettingsActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     context.startActivity(intent);
@@ -51,7 +50,6 @@ public class helpers {
             public void onClick(View v) {
                 if(context.getClass() != MainActivity.class)
                 {
-                    checkIfActivityisRunning(context);
                     Intent intent = new Intent(context, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     context.startActivity(intent);
@@ -64,7 +62,6 @@ public class helpers {
             public void onClick(View v) {
                 if(context.getClass() != ProfileActivity.class)
                 {
-                    checkIfActivityisRunning(context);
                     Intent intent = new Intent(context, ProfileActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     context.startActivity(intent);
@@ -73,32 +70,5 @@ public class helpers {
         });
     }
 
-    // Partly inspired from https://stackoverflow.com/questions/5975811/how-to-check-if-an-activity-is-the-last-one-in-the-activity-stack-for-an-applica
-    private static void checkIfActivityisRunning(Context context)
-    {
-        ActivityManager manager = (ActivityManager) context.getSystemService( ACTIVITY_SERVICE );
 
-        try{
-            List<ActivityManager.RunningTaskInfo> taskInfoList = manager.getRunningTasks(15);
-
-            Integer i = 0;
-            for (ActivityManager.RunningTaskInfo task : taskInfoList)
-            {
-                i++;
-                Log.d("INTEGER", i.toString());
-                Log.d("taskGetClass", task.getClass().toString());
-                Log.d("taskGetClass", task.baseActivity.getShortClassName());
-
-                Log.d("contextGetClass", context.getClass().toString());
-                if(task.getClass().equals(context.getClass()))
-                {
-                    Log.d("ALREADY RUNNING", "TRUE");
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-    }
 }
