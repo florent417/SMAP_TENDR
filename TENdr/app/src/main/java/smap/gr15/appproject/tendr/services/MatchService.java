@@ -33,8 +33,8 @@ public class MatchService extends Service {
     private String PROFILES_DB = "profiles";
     private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private List<Profile> wantedMatches;
-    private LinkedList<Profile> unwantedMatches;
+    private List<Profile> wantedMatches = new ArrayList<>();
+    private LinkedList<Profile> unwantedMatches = new LinkedList<>();
     private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -87,8 +87,22 @@ public class MatchService extends Service {
         return swipeableProfiles;
     }
 
-    private void initSwipeQueue() {
+  /*  private void initSwipeQueue() {
 
+    }*/
+
+    public void swipeNo(Profile noThanksProfile) {
+        swipeableProfiles.remove(noThanksProfile);
+
+        unwantedMatches.add(noThanksProfile);
+
+
+
+
+
+        if (swipeableProfiles.size() <= 10) {
+            fetchProfilesForSwiping(ownProfile);
+        }
     }
 
     private void fetchOwnProfileData(String profileKey) {
