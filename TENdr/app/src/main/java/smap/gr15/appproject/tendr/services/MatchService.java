@@ -29,9 +29,10 @@ import smap.gr15.appproject.tendr.models.Profile;
 public class MatchService extends Service {
     private String LOG = "MatchService LOG";
     private int MATCH_LIMIT = 10;
-    private String MATCHES_DB = "matches";
     private String PROFILES_DB = "profiles";
     private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
+    private int UNWANTED_MATCHES_LIMIT = 100;
+    private int WANTED_MATCHES_LIMIT = 100;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
     private List<Profile> wantedMatches = new ArrayList<>();
     private LinkedList<Profile> unwantedMatches = new LinkedList<>();
@@ -57,8 +58,8 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
         fetchOwnProfileData("alexander8@hotmail.com"); // maybe there's firebase method for getting own id?
-        // Now we have profile data. Use this to search for a number matches with matching
-        // gender, compatible genderPreference, and same country.
+
+    //    createProfileInDB(new Profile("AlexBoi", 26, "Student", ));
 
     }
 
@@ -94,15 +95,52 @@ public class MatchService extends Service {
     public void swipeNo(Profile noThanksProfile) {
         swipeableProfiles.remove(noThanksProfile);
 
-        unwantedMatches.add(noThanksProfile);
+        addProfileToUnwantedMatches(noThanksProfile);
 
+        updateSwipeQueueIfNeeded();
+    }
 
+    public void swipeYes(Profile yesPleaseProfile) {
+        swipeableProfiles.remove(yesPleaseProfile);
 
+        addProfileToWantedMatches(yesPleaseProfile);
 
+        updateSwipeQueueIfNeeded();
+    }
 
+    public void createProfileInDB(Profile profile) {
+        // create Profile
+        // create wantedMatches
+        // create unwantedMatches
+        //  other collections we find we will need
+    }
+
+    private void updateSwipeQueueIfNeeded() {
         if (swipeableProfiles.size() <= 10) {
             fetchProfilesForSwiping(ownProfile);
         }
+    }
+
+    private void addProfileToUnwantedMatches(Profile profile) {
+        unwantedMatches.add(profile);
+        if (unwantedMatches.size() >= UNWANTED_MATCHES_LIMIT)
+        {
+            unwantedMatches.remove();
+
+            // Update database with data. Remove just the one instead of sending whole list of 100
+        }
+        // Update database with data of just the 1 new person
+    }
+
+    private void addProfileToWantedMatches(Profile profile) {
+        wantedMatches.add(profile);
+        if (unwantedMatches.size() >= WANTED_MATCHES_LIMIT)
+        {
+            unwantedMatches.remove();
+            // Update database with data. Remove just the one instead of sending whole list of 100
+        }
+
+        // Update database with data of just the 1 new person
     }
 
     private void fetchOwnProfileData(String profileKey) {
@@ -132,7 +170,7 @@ public class MatchService extends Service {
     // Source: https://medium.com/firebase-developers/why-is-my-cloud-firestore-query-slow-e081fb8e55dd
     private void fetchSuccessfulMatches(List<String> matchIds) {
         if (!matchIds.isEmpty()) {
-            db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+            db.collection(PROFILES_DB)
                     .whereIn("email", matchIds)
                     .limit(MATCH_LIMIT)
                     .get()

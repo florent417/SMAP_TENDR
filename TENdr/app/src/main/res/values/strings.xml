@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">TENdr</string>
     <string name="LOGIN">LOGIN</string>
+    <string name="WELCOME">WELCOME TO TENdr - Sign Up Below</string>
+    <string name="EmailHint">Email</string>
+    <string name="PasswordHint">Password</string>
+    <string name="AgeHint">Age</string>
+    <string name="firstname">Firstname</string>
+    <string name="Occupation">Occupation</string>
+    <string name="City">City</string>
+    <string name="Country">Country</string>
+    <string name="SIGNUP">SIGN UP</string>
+    <string name="ALREADYUSER">Already have an account? Click here</string>
+    <string-array name="Sex">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
 </resources>
