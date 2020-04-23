@@ -25,17 +25,21 @@ import java.util.Objects;
 
 import smap.gr15.appproject.tendr.models.Match;
 import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.models.UnwantedMatches;
+import smap.gr15.appproject.tendr.models.WantedMatches;
 
 public class MatchService extends Service {
-    private String LOG = "MatchService LOG";
+    private final String LOG = "MatchService LOG";
     private int MATCH_LIMIT = 10;
-    private String PROFILES_DB = "profiles";
+    private final String PROFILES_DB = "profiles";
+    private final String UNWANTED_MATCHES_DB = "unwantedMatches";
+    private final String WANTED_MATCHES_DB = "wantedMatches";
     private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
     private int UNWANTED_MATCHES_LIMIT = 100;
     private int WANTED_MATCHES_LIMIT = 100;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private List<Profile> wantedMatches = new ArrayList<>();
-    private LinkedList<Profile> unwantedMatches = new LinkedList<>();
+    private WantedMatches wantedMatches;
+    private UnwantedMatches unwantedMatches;
     private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -57,9 +61,9 @@ public class MatchService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
-        fetchOwnProfileData("alexander8@hotmail.com"); // maybe there's firebase method for getting own id?
-
-    //    createProfileInDB(new Profile("AlexBoi", 26, "Student", ));
+        fetchOwnProfileData("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
+        createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
+                "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
 
     }
 
@@ -143,6 +147,26 @@ public class MatchService extends Service {
         // Update database with data of just the 1 new person
     }
 
+    private void fetchWantedMatches(String userId) {
+        db.collection(WANTED_MATCHES_DB).document(userId)
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(LOG, "DocumentSnapshot data: " + document.getData());
+                        wantedMatches = document.toObject(WantedMatches.class); // what if null??
+                    } else {
+                        Log.d(LOG, "No such document");
+                    }
+                } else {
+                    Log.d(LOG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
     private void fetchOwnProfileData(String profileKey) {
         db.collection(PROFILES_DB).document(profileKey)
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -154,6 +178,8 @@ public class MatchService extends Service {
                         Log.d(LOG, "DocumentSnapshot data: " + document.getData());
                         ownProfile = document.toObject(Profile.class);
                         fetchSuccessfulMatches(ownProfile.getMatches());
+                        fetchWantedMatches(ownProfile.getUserId());
+//                        fetchUnwantedMatches(ownProfile.getUserId());
                         fetchProfilesForSwiping(ownProfile);
                     } else {
                         Log.d(LOG, "No such document");
