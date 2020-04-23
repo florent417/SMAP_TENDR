@@ -22,7 +22,8 @@ public class Profile {
     public Profile() {}
 
     //This is used to create a new profile on first launch
-    public Profile(String firstName, int age, String occupation, String city, String country, String gender, String email, String password) {
+    public Profile(String userId, String firstName, int age, String occupation, String city, String country,
+                   String gender, String email, String password) {
         this.firstName = firstName;
         this.age = age;
         this.occupation = occupation;
@@ -32,6 +33,8 @@ public class Profile {
         this.genderPreference.add(helpers.setGenderOpposite(gender));
         this.email = email;
         this.password = password;
+        this.matches = new ArrayList<String>();
+        this.userId = userId;
     }
 
     public String getFirstName() {
