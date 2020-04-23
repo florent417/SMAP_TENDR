@@ -63,6 +63,8 @@ public class ProfileActivity extends AppCompatActivity {
     GridView gridView;
     ArrayList<String> imgUrls = new ArrayList<>();
 
+    ProfileImageAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,11 +100,8 @@ public class ProfileActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Uri> task) {
                 String testPath = task.getResult().toString();
                 imgUrls.add(testPath);
-                imgUrls.add(testPath);
-                imgUrls.add(testPath);
-                imgUrls.add(testPath);
                 // Needs to be activity context and not application context
-                ProfileImageAdapter adapter= new ProfileImageAdapter(ProfileActivity.this, imgUrls);
+                adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
                 gridView.setAdapter(adapter);
                 adapter.setOnGridItemClickListener(onGridItemClickListener);
                 adapter.notifyDataSetChanged();
@@ -174,9 +173,16 @@ public class ProfileActivity extends AppCompatActivity {
             picStorageRef.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    progressDialog.dismiss();
+
                     Toast.makeText(ProfileActivity.this, "Image uploaded", Toast.LENGTH_SHORT).show();
-                    
+                    picStorageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            imgUrls.add(task.getResult().toString());
+                            adapter.setImgUrls(imgUrls);
+                            progressDialog.dismiss();
+                        }
+                    });
                 }
             });
         }

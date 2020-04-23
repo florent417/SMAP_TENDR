@@ -34,6 +34,11 @@ public class ProfileImageAdapter extends BaseAdapter {
     private Context context;
     private List<String> imgUrls = new ArrayList<>();
 
+    public void setImgUrls(List<String> imgUrls){
+        this.imgUrls = imgUrls;
+        notifyDataSetChanged();
+    }
+
     public ProfileImageAdapter(Context context, ArrayList<String> imgUrls){
         this.context = context;
         this.imgUrls = imgUrls;
