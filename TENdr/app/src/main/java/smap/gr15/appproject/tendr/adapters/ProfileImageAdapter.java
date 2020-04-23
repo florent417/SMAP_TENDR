@@ -1,20 +1,35 @@
 package smap.gr15.appproject.tendr.adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
 
 public class ProfileImageAdapter extends BaseAdapter {
+    private static final String TAG = "ProfileImageAdapter";
+    private OnGridItemClickListener onGridItemClickListener;
+    public interface OnGridItemClickListener {
+        void onGridItemClick(int position);
+    }
+    public void setOnGridItemClickListener(OnGridItemClickListener gridItemClickListener){
+        onGridItemClickListener = gridItemClickListener;
+    }
 
     private Context context;
     private List<String> imgUrls = new ArrayList<>();
@@ -46,6 +61,14 @@ public class ProfileImageAdapter extends BaseAdapter {
         ImageView imageView;
         imageView = (ImageView) convertView.findViewById(R.id.imageViewGrid);
         Picasso.get().load(imgUrls.get(position)).into(imageView);
+
+        FloatingActionButton floatingActionButton = convertView.findViewById(R.id.floatingActionButton4);
+        floatingActionButton.setOnClickListener(v -> {
+            if (onGridItemClickListener != null){
+                onGridItemClickListener.onGridItemClick(position);
+            }
+        });
+
         return convertView;
     }
 }

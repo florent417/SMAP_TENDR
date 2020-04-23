@@ -3,8 +3,11 @@ package smap.gr15.appproject.tendr.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +26,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -42,6 +46,7 @@ public class ProfileActivity extends AppCompatActivity {
     FirebaseStorage storage = FirebaseStorage.getInstance();
     String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
     Profile testProf = null;
+    private static int PICK_IMAGE_REQUEST =  2;
 
     @BindView(R.id.FirstNameProfileEditText)
     EditText firstNameEditTxt;
@@ -96,8 +101,10 @@ public class ProfileActivity extends AppCompatActivity {
                 imgUrls.add(testPath);
                 imgUrls.add(testPath);
                 imgUrls.add(testPath);
-                ProfileImageAdapter adapter= new ProfileImageAdapter(getApplicationContext(), imgUrls);
+                // Needs to be activity context and not application context
+                ProfileImageAdapter adapter= new ProfileImageAdapter(ProfileActivity.this, imgUrls);
                 gridView.setAdapter(adapter);
+                adapter.setOnGridItemClickListener(onGridItemClickListener);
                 adapter.notifyDataSetChanged();
                 Log.d(TAG, "Got path to russian babes: " + testPath);
             }
@@ -105,22 +112,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
-    /*
-    private void testGetPic(){
-        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
-        StorageReference russianDateRef = storage.getReference(pathToTestPic);
-        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                String testPath = task.getResult().toString();
-                Log.d(TAG, "Got path to russian babes: " + testPath);
-                Picasso.get().load(testPath).into(imgView);
-            }
-        });
-
-    }
-    */
-
+    //region Needed for later
     private void testGetProfile(){
 
         DocumentReference docRef = firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc);
@@ -139,11 +131,61 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
+    //endregion
 
-    private void testAddProfile(){
+    private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = position -> {
+        /*
+        Intent galleryIntent = new Intent(
+                Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(Intent.createChooser(galleryIntent, "Complete action using"), RC_PHOTO_PICKER);
+
+         */
+        // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
+        // Multiple options, seems like this is better than the one above
+        // Defining Implicit Intent to mobile gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,"Select Image from here..."), PICK_IMAGE_REQUEST);
+    };
+
+    // Override onActivityResult method
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            // Get the Uri of data
+            // Code for showing progressDialog while uploading
+            ProgressDialog progressDialog
+                    = new ProgressDialog(this);
+            progressDialog.setTitle("Uploading...");
+            progressDialog.show();
+
+            Uri filePath;
+            filePath = data.getData();
+            Log.d(TAG, filePath.toString());
+            String pathPics = "pictures/" + existingDoc + "/";
+            StorageReference picStorageRef = storage.getReference().child(pathPics + "testPic");
+
+            picStorageRef.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    progressDialog.dismiss();
+                    Toast.makeText(ProfileActivity.this, "Image uploaded", Toast.LENGTH_SHORT).show();
+                    
+                }
+            });
+        }
+    }
+}
+
+//region Previously used code
+/*
+private void testAddProfile(){
         List<String> genderprefs = new ArrayList<>();
 
         genderprefs.add("Man");
@@ -165,4 +207,19 @@ public class ProfileActivity extends AppCompatActivity {
                 }
         );
     }
-}
+
+    private void testGetPic(){
+        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
+        StorageReference russianDateRef = storage.getReference(pathToTestPic);
+        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                String testPath = task.getResult().toString();
+                Log.d(TAG, "Got path to russian babes: " + testPath);
+                Picasso.get().load(testPath).into(imgView);
+            }
+        });
+
+    }
+ */
+//endregion
