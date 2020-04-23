@@ -175,6 +175,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         if(task.isSuccessful())
                         {
                             Profile profile = new Profile(
+                                    Auth.getUid(),
                                     FirstnameFinal,
                                     Integer.parseInt(AgeFinal),
                                     OccupationFinal,
