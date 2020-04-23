@@ -3,6 +3,7 @@ package smap.gr15.appproject.tendr.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -76,6 +77,11 @@ public class AuthenticationActivity extends AppCompatActivity {
     @BindView(R.id.CountryAuthenticationEditText)
     EditText Country;
 
+
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,8 +97,8 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-
     }
+
 
     @Override
     protected void onStart() {
