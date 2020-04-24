@@ -45,7 +45,7 @@ public class ProfileImageAdapter extends BaseAdapter {
     }
     @Override
     public int getCount() {
-        return imgUrls.size();
+        return 4;
     }
 
     @Override
@@ -65,7 +65,16 @@ public class ProfileImageAdapter extends BaseAdapter {
         }
         ImageView imageView;
         imageView = (ImageView) convertView.findViewById(R.id.imageViewGrid);
-        Picasso.get().load(imgUrls.get(position)).into(imageView);
+
+        String imgUrl = null;
+        try{
+            imgUrl = imgUrls.get(position);
+        } catch (IndexOutOfBoundsException e){
+            Log.d(TAG, e.getMessage());
+        }
+
+        if(imgUrl != null)
+            Picasso.get().load(imgUrls.get(position)).into(imageView);
 
         FloatingActionButton floatingActionButton = convertView.findViewById(R.id.floatingActionButton4);
         floatingActionButton.setOnClickListener(v -> {

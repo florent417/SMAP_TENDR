@@ -56,8 +56,6 @@ public class ProfileActivity extends AppCompatActivity {
     EditText cityEditTxt;
     @BindView(R.id.saveBtn)
     Button saveBtn;
-    // @BindView(R.id.profilePicture)
-    // ImageView imgView;
 
     @BindView(R.id.gridViewTest)
     GridView gridView;
@@ -83,6 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
         testProf.setFirstName(firstNameEditTxt.getText().toString());
         testProf.setAge(Integer.valueOf(ageEditTxt.getText().toString()));
         testProf.setCity(cityEditTxt.getText().toString());
+        testProf.setPictures(imgUrls);
         firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc)
                 .set(testProf).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
