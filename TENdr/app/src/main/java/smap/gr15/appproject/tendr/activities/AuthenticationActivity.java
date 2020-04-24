@@ -209,7 +209,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     //Redirect to main Activity after successful Login
     private void redirectToMainActivity()
     {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
         finish();
     }
