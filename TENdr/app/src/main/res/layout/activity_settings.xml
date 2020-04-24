@@ -38,6 +38,7 @@
                 android:textStyle="bold"
                 android:textSize="25sp"
                 />
+
             <CheckedTextView
                 android:id="@+id/ShowMeFemale"
                 android:layout_width="match_parent"
@@ -74,6 +75,8 @@
                 android:inputType="text"
                  />
 
+
+
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="10dp"/>
@@ -96,10 +99,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="10dp"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/Occupation"
+                android:textStyle="bold"
+                android:textSize="25sp" />
+            <EditText
+                android:id="@+id/OccupationOccupation"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/what_s_your_occupation"
+                android:inputType="text"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"/>
+
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="BUTOON" />
+                android:background="@color/colorButtons"
+                android:textColor="@color/colorButtonsText"
+                android:text="@string/apply"
+
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"/>
 
             <Button
                 android:layout_width="match_parent"

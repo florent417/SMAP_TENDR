@@ -17,6 +17,8 @@
     <string name="location">Location</string>
     <string name="country_of_residence">Country of Residence</string>
     <string name="city_of_residence">City Of Residence</string>
+    <string name="what_s_your_occupation">What\'s your Occupation?</string>
+    <string name="apply">APPLY</string>
     <string-array name="Sex">
         <item>Male</item>
         <item>Female</item>

@@ -32,9 +32,6 @@ import smap.gr15.appproject.tendr.utils.helpers;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private static final String BROADCAST_USER_PROFILE_FETCHED = "BROADCAST_USER_PROFILE_FETCHED";
-    private static final String EXTRA_USER_PROFILE_FETCHED = "EXTRA_USER_PROFILE_FETCHED";
-
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
 
