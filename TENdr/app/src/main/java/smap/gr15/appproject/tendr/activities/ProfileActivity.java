@@ -99,11 +99,11 @@ public class ProfileActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Uri> task) {
                 String testPath = task.getResult().toString();
                 imgUrls.add(testPath);
+                Log.d(TAG, imgUrls.get(0));
                 // Needs to be activity context and not application context
                 adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
                 gridView.setAdapter(adapter);
                 adapter.setOnGridItemClickListener(onGridItemClickListener);
-                adapter.notifyDataSetChanged();
                 Log.d(TAG, "Got path to russian babes: " + testPath);
             }
         });

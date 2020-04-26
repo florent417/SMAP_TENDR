@@ -45,7 +45,7 @@ public class ProfileImageAdapter extends BaseAdapter {
     }
     @Override
     public int getCount() {
-        return 4;
+        return imgUrls.size();
     }
 
     @Override
