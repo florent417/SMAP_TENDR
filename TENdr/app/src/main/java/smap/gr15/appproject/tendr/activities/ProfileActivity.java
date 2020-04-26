@@ -15,6 +15,7 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -166,7 +167,28 @@ public class ProfileActivity extends AppCompatActivity {
 
         @Override
         public void onGridItemDeleteClick(int position) {
+            ProgressDialog progressDialog  = new ProgressDialog(ProfileActivity.this);
+            progressDialog.setTitle("Deleting image...");
+            progressDialog.show();
 
+            String imageUrl = imgUrls.get(position);
+            StorageReference deletePicStorageRef = storage.getReferenceFromUrl(imageUrl);
+
+            deletePicStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    imgUrls.remove(position);
+                    adapter.setImgUrls(imgUrls);
+                    adapter.notifyDataSetChanged();
+                    progressDialog.dismiss();
+                    Toast.makeText(ProfileActivity.this, "Image deleted", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(ProfileActivity.this, "Something went wrong. Couldn't delete image", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     };
 
@@ -179,14 +201,12 @@ public class ProfileActivity extends AppCompatActivity {
 
             // Get the Uri of data
             // Code for showing progressDialog while uploading
-            ProgressDialog progressDialog  = new ProgressDialog(this);
+            ProgressDialog progressDialog  = new ProgressDialog(ProfileActivity.this);
             progressDialog.setTitle("Uploading image...");
             progressDialog.show();
 
-            Uri filePath;
-            filePath = data.getData();
-            String pathPics = "pictures/" + existingDoc + "/";
-            StorageReference picStorageRef = storage.getReference().child(pathPics + UUID.randomUUID().toString());
+            Uri filePath = data.getData();
+            StorageReference picStorageRef = storage.getReference().child(pathToUserPics + UUID.randomUUID().toString());
 
             picStorageRef.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -197,6 +217,7 @@ public class ProfileActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             imgUrls.add(task.getResult().toString());
                             adapter.setImgUrls(imgUrls);
+                            adapter.notifyDataSetChanged();
                             progressDialog.dismiss();
                         }
                     });
