@@ -1,10 +1,7 @@
 package smap.gr15.appproject.tendr.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,40 +9,46 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
 
 public class ProfileImageAdapter extends BaseAdapter {
+    private Context context;
+    private List<String> imgUrls = new ArrayList<>();
+    private final int MAX_AMOUNT_PICS = 4;
     private static final String TAG = "ProfileImageAdapter";
+    private Drawable defaultImagePic = null;
+
     private OnGridItemClickListener onGridItemClickListener;
     public interface OnGridItemClickListener {
-        void onGridItemClick(int position);
+        void onGridItemAddClick(int position);
+        void onGridItemDeleteClick(int position);
     }
     public void setOnGridItemClickListener(OnGridItemClickListener gridItemClickListener){
         onGridItemClickListener = gridItemClickListener;
     }
 
-    private Context context;
-    private List<String> imgUrls = new ArrayList<>();
+    public ProfileImageAdapter(Context context, List<String> imgUrls){
+        this.context = context;
+        this.imgUrls = imgUrls;
+        defaultImagePic = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_menu_gallery, context.getTheme());
+    }
 
     public void setImgUrls(List<String> imgUrls){
         this.imgUrls = imgUrls;
         notifyDataSetChanged();
     }
 
-    public ProfileImageAdapter(Context context, ArrayList<String> imgUrls){
-        this.context = context;
-        this.imgUrls = imgUrls;
-    }
     @Override
     public int getCount() {
-        return imgUrls.size();
+        return MAX_AMOUNT_PICS;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class ProfileImageAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.profile_image, null);
         }
         ImageView imageView;
-        imageView = (ImageView) convertView.findViewById(R.id.imageViewGrid);
+        imageView = (ImageView) convertView.findViewById(R.id.ProfileImageImageView);
 
         String imgUrl = null;
         try{
@@ -76,10 +79,28 @@ public class ProfileImageAdapter extends BaseAdapter {
         if(imgUrl != null)
             Picasso.get().load(imgUrls.get(position)).into(imageView);
 
-        FloatingActionButton floatingActionButton = convertView.findViewById(R.id.floatingActionButton4);
+        // TODO: check if img urls are at maximum size = 4
+
+        // Set FloatingActionButton functionality and layout based on a picture is already added or not
+        FloatingActionButton floatingActionButton = convertView.findViewById(R.id.ProfileImageFloatingActionButton);
+
+        boolean imageIsDefault = defaultImagePic == imageView.getDrawable();
+
+        if (!imageIsDefault){
+            // other option ic_menu_close_clear_cancel
+            floatingActionButton.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_delete, context.getTheme()));
+        }
+
         floatingActionButton.setOnClickListener(v -> {
-            if (onGridItemClickListener != null){
-                onGridItemClickListener.onGridItemClick(position);
+            // If default pic is set, you can add a picture, if not you can only delete
+            if (imageIsDefault) {
+                if (onGridItemClickListener != null){
+                    onGridItemClickListener.onGridItemAddClick(position);
+                }
+            } else{
+                if (onGridItemClickListener != null){
+                    onGridItemClickListener.onGridItemDeleteClick(position);
+                }
             }
         });
 

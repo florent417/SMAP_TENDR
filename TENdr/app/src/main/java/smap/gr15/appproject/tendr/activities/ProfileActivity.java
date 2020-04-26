@@ -7,30 +7,26 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,23 +39,28 @@ import smap.gr15.appproject.tendr.utils.Globals;
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    FirebaseStorage storage = FirebaseStorage.getInstance();
-    String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
-    Profile testProf = null;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
+    private String pathToPics = "pictures/";
+    private String pathToUserPics = pathToPics + existingDoc + "/";
+
+    private Profile currentLoggedInProfile = null;
     private static int PICK_IMAGE_REQUEST =  2;
 
-    @BindView(R.id.FirstNameProfileEditText)
-    EditText firstNameEditTxt;
-    @BindView(R.id.AgeProfileEditText)
-    EditText ageEditTxt;
+    @BindView(R.id.BioProfileMultilineText)
+    EditText bioEditText;
+    @BindView(R.id.OccupationProfileEditText)
+    EditText occupationEditText;
     @BindView(R.id.CityProfileEditText)
     EditText cityEditTxt;
-    @BindView(R.id.saveBtn)
+    @BindView(R.id.GenderProfileEditText)
+    EditText genderEditTxt;
+    @BindView(R.id.SaveProfileButton)
     Button saveBtn;
 
-    @BindView(R.id.gridViewTest)
+    @BindView(R.id.ImagesProfileGrid)
     GridView gridView;
-    ArrayList<String> imgUrls = new ArrayList<>();
+    List<String> imgUrls = new ArrayList<>();
 
     ProfileImageAdapter adapter;
 
@@ -69,21 +70,23 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
-        testGetPicGrid();
+        testGetProfile();
+        //testGetPicGrid();
 
         //testGetPic();
-        //testGetProfile();
+
         //testAddProfile();
     }
 
-    @OnClick(R.id.saveBtn)
+    @OnClick(R.id.SaveProfileButton)
     void saveBtn(View view){
-        testProf.setFirstName(firstNameEditTxt.getText().toString());
-        testProf.setAge(Integer.valueOf(ageEditTxt.getText().toString()));
-        testProf.setCity(cityEditTxt.getText().toString());
-        testProf.setPictures(imgUrls);
+        currentLoggedInProfile.setBio(bioEditText.getText().toString());
+        currentLoggedInProfile.setOccupation(occupationEditText.getText().toString());
+        currentLoggedInProfile.setCity(cityEditTxt.getText().toString());
+        currentLoggedInProfile.setGender(genderEditTxt.getText().toString());
+        currentLoggedInProfile.setPictures(imgUrls);
         firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc)
-                .set(testProf).addOnSuccessListener(new OnSuccessListener<Void>() {
+                .set(currentLoggedInProfile).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(ProfileActivity.this, "Great Succes!", Toast.LENGTH_LONG).show();
@@ -122,31 +125,49 @@ public class ProfileActivity extends AppCompatActivity {
                 DocumentSnapshot documentSnapshot = task.getResult();
 
                 if(documentSnapshot.exists()){
-                    testProf = documentSnapshot.toObject(Profile.class);
-                    firstNameEditTxt.setText(testProf.getFirstName());
-                    ageEditTxt.setText(String.valueOf(testProf.getAge()));
-                    cityEditTxt.setText(testProf.getCity());
+                    currentLoggedInProfile = documentSnapshot.toObject(Profile.class);
+
+                    // Populate activity
+                    bioEditText.setText(currentLoggedInProfile.getBio());
+                    occupationEditText.setText(currentLoggedInProfile.getOccupation());
+                    cityEditTxt.setText(currentLoggedInProfile.getCity());
+                    genderEditTxt.setText(currentLoggedInProfile.getGender());
+
+                    if (currentLoggedInProfile.getPictures() != null)
+                        imgUrls = currentLoggedInProfile.getPictures();
+
+                    adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
+                    gridView.setAdapter(adapter);
+                    adapter.setOnGridItemClickListener(onGridItemClickListener);
                 }
             }
         });
     }
     //endregion
 
-    private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = position -> {
-        /*
-        Intent galleryIntent = new Intent(
-                Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(Intent.createChooser(galleryIntent, "Complete action using"), RC_PHOTO_PICKER);
+    private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
+        @Override
+        public void onGridItemAddClick(int position) {
+            /*
+                Intent galleryIntent = new Intent(
+                        Intent.ACTION_PICK,
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(Intent.createChooser(galleryIntent, "Complete action using"), RC_PHOTO_PICKER);
+            */
+            // Move comment out, since multiple functions use the code in the link
+            // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
+            // Multiple options, seems like this is better than the one above
+            // Defining Implicit Intent to mobile gallery
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent,"Select Image from here..."), PICK_IMAGE_REQUEST);
+        }
 
-         */
-        // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
-        // Multiple options, seems like this is better than the one above
-        // Defining Implicit Intent to mobile gallery
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select Image from here..."), PICK_IMAGE_REQUEST);
+        @Override
+        public void onGridItemDeleteClick(int position) {
+
+        }
     };
 
     // Override onActivityResult method
@@ -158,21 +179,18 @@ public class ProfileActivity extends AppCompatActivity {
 
             // Get the Uri of data
             // Code for showing progressDialog while uploading
-            ProgressDialog progressDialog
-                    = new ProgressDialog(this);
-            progressDialog.setTitle("Uploading...");
+            ProgressDialog progressDialog  = new ProgressDialog(this);
+            progressDialog.setTitle("Uploading image...");
             progressDialog.show();
 
             Uri filePath;
             filePath = data.getData();
-            Log.d(TAG, filePath.toString());
             String pathPics = "pictures/" + existingDoc + "/";
-            StorageReference picStorageRef = storage.getReference().child(pathPics + "testPic");
+            StorageReference picStorageRef = storage.getReference().child(pathPics + UUID.randomUUID().toString());
 
             picStorageRef.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
                     Toast.makeText(ProfileActivity.this, "Image uploaded", Toast.LENGTH_SHORT).show();
                     picStorageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                         @Override
