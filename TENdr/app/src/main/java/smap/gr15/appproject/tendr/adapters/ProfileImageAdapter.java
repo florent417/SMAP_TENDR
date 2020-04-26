@@ -24,7 +24,10 @@ public class ProfileImageAdapter extends BaseAdapter {
     private List<String> imgUrls = new ArrayList<>();
     private final int MAX_AMOUNT_PICS = 4;
     private static final String TAG = "ProfileImageAdapter";
+
     private Drawable defaultImagePic = null;
+    private Drawable addDrawable = null;
+    private Drawable deleteDrawable = null;
 
     private OnGridItemClickListener onGridItemClickListener;
     public interface OnGridItemClickListener {
@@ -39,6 +42,8 @@ public class ProfileImageAdapter extends BaseAdapter {
         this.context = context;
         this.imgUrls = imgUrls;
         defaultImagePic = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_menu_gallery, context.getTheme());
+        addDrawable = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_input_add, context.getTheme());
+        deleteDrawable = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_delete, context.getTheme());
     }
 
     public void setImgUrls(List<String> imgUrls){
@@ -89,7 +94,7 @@ public class ProfileImageAdapter extends BaseAdapter {
 
         if (!imageIsDefault){
             // other option ic_menu_close_clear_cancel
-            floatingActionButton.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_delete, context.getTheme()));
+            floatingActionButton.setImageDrawable(deleteDrawable);
         }
 
         floatingActionButton.setOnClickListener(v -> {
@@ -100,7 +105,7 @@ public class ProfileImageAdapter extends BaseAdapter {
                 } else{
                     onGridItemClickListener.onGridItemDeleteClick(position);
                     // TODO: b4 or after after functionality?
-                    floatingActionButton.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_input_add, context.getTheme()));
+                    floatingActionButton.setImageDrawable(addDrawable);
                     imageView.setImageDrawable(defaultImagePic);
                 }
             }
