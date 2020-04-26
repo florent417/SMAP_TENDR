@@ -66,6 +66,7 @@ public class ProfileImageAdapter extends BaseAdapter {
         if (convertView == null){
             convertView = LayoutInflater.from(context).inflate(R.layout.profile_image, null);
         }
+
         ImageView imageView;
         imageView = (ImageView) convertView.findViewById(R.id.ProfileImageImageView);
 
@@ -93,13 +94,14 @@ public class ProfileImageAdapter extends BaseAdapter {
 
         floatingActionButton.setOnClickListener(v -> {
             // If default pic is set, you can add a picture, if not you can only delete
-            if (imageIsDefault) {
-                if (onGridItemClickListener != null){
+            if (onGridItemClickListener != null){
+                if (imageIsDefault) {
                     onGridItemClickListener.onGridItemAddClick(position);
-                }
-            } else{
-                if (onGridItemClickListener != null){
+                } else{
                     onGridItemClickListener.onGridItemDeleteClick(position);
+                    // TODO: b4 or after after functionality?
+                    floatingActionButton.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.ic_input_add, context.getTheme()));
+                    imageView.setImageDrawable(defaultImagePic);
                 }
             }
         });
