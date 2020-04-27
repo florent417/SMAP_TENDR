@@ -106,7 +106,7 @@ public class ProfileImageAdapter extends BaseAdapter {
             floatingActionButton.setImageDrawable(deleteDrawable);
         }
 
-
+        /*
         targetProfileImage = new Target() {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -130,8 +130,10 @@ public class ProfileImageAdapter extends BaseAdapter {
             }
         };
 
+         */
 
-        Picasso.get().load(imgUrl).placeholder(defaultImagePic).error(defaultImagePic).into(targetProfileImage);
+
+        Picasso.get().load(imgUrl).placeholder(defaultImagePic).error(defaultImagePic).into(imageView);
 
         floatingActionButton.setOnClickListener(v -> {
             // If default pic is set, you can add a picture, if not you can only delete
