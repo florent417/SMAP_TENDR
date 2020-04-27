@@ -179,7 +179,6 @@ public class ProfileActivity extends AppCompatActivity {
                 public void onSuccess(Void aVoid) {
                     imgUrls.remove(position);
                     adapter.setImgUrls(imgUrls);
-                    adapter.notifyDataSetChanged();
                     progressDialog.dismiss();
                     Toast.makeText(ProfileActivity.this, "Image deleted", Toast.LENGTH_SHORT).show();
                 }
@@ -196,6 +195,10 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_CANCELED){
+            adapter.setImgUrls(imgUrls);
+        }
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
@@ -217,7 +220,6 @@ public class ProfileActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             imgUrls.add(task.getResult().toString());
                             adapter.setImgUrls(imgUrls);
-                            adapter.notifyDataSetChanged();
                             progressDialog.dismiss();
                         }
                     });

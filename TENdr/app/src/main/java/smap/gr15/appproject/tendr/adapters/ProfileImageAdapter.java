@@ -2,6 +2,8 @@ package smap.gr15.appproject.tendr.adapters;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.style.LineHeightSpan;
@@ -18,6 +20,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +36,11 @@ public class ProfileImageAdapter extends BaseAdapter {
     private Drawable defaultImagePic = null;
     private Drawable addDrawable = null;
     private Drawable deleteDrawable = null;
-    private boolean imgIsDefault = true;
+    private boolean[] imgIsDefault = {true, true, true, true};
+    private boolean imgIsDefault2 = true;
+    //private ImageView imageView;
+    //private FloatingActionButton floatingActionButton;
+    private Target targetProfileImage;
 
     private OnGridItemClickListener onGridItemClickListener;
     public interface OnGridItemClickListener {
@@ -78,8 +85,7 @@ public class ProfileImageAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.profile_image, null);
         }
 
-        ImageView imageView;
-        imageView = (ImageView) convertView.findViewById(R.id.ProfileImageImageView);
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.ProfileImageImageView);
 
         String imgUrl = null;
         try{
@@ -88,20 +94,111 @@ public class ProfileImageAdapter extends BaseAdapter {
             Log.d(TAG, e.getMessage());
         }
 
-        Log.d(TAG, "getView: " + imgUrl);
+        Log.d(TAG, "getView: " + position);
+
 
         FloatingActionButton floatingActionButton = convertView.findViewById(R.id.ProfileImageFloatingActionButton);
-        if (imgUrl != null){
-            Picasso.get().load(imgUrl).placeholder(defaultImagePic).into(imageView,
+
+        if (imgUrl == null){
+            floatingActionButton.setImageDrawable(addDrawable);
+            imageView.setImageDrawable(defaultImagePic);
+        }else {
+            floatingActionButton.setImageDrawable(deleteDrawable);
+        }
+
+
+        targetProfileImage = new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                Drawable drawable = new BitmapDrawable(context.getResources(), bitmap);
+                imageView.setImageDrawable(drawable);
+                //imgIsDefault2 = false;
+                //floatingActionButton.setImageDrawable(deleteDrawable);
+            }
+
+            @Override
+            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                imageView.setImageDrawable(errorDrawable);
+                //imgIsDefault2 = true;
+                //floatingActionButton.setImageDrawable(addDrawable);
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                //imageView.setImageDrawable(placeHolderDrawable);
+                //imgIsDefault[position] = true;
+            }
+        };
+
+
+        Picasso.get().load(imgUrl).placeholder(defaultImagePic).error(defaultImagePic).into(targetProfileImage);
+
+        floatingActionButton.setOnClickListener(v -> {
+            // If default pic is set, you can add a picture, if not you can only delete
+            if (onGridItemClickListener != null){
+                String imgUrl2 = null;
+
+                if (imgUrls.size() != 0 && imgUrls.size() > position){
+                    imgUrl2 = imgUrls.get(position);
+                }
+
+                if (imgUrl2 == null) {
+                    //imgIsDefault[position] = false;
+                    onGridItemClickListener.onGridItemAddClick(position);
+                    //floatingActionButton.setImageDrawable(deleteDrawable);
+
+                } else{
+                    //imgIsDefault[position] = true;
+                    onGridItemClickListener.onGridItemDeleteClick(position);
+                    // TODO: b4 or after after functionality?
+                    //floatingActionButton.setImageDrawable(addDrawable);
+                    imageView.setImageDrawable(defaultImagePic);
+                }
+            }
+        });
+
+
+        return convertView;
+    }
+}
+    /*
+    private Target someTarget = new Target() {
+
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            imageView.setImageBitmap(bitmap);
+            imgIsDefault = false;
+            floatingActionButton.setImageDrawable(deleteDrawable);
+        }
+
+        @Override
+        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+            imageView.setImageDrawable(errorDrawable);
+            imgIsDefault = true;
+            floatingActionButton.setImageDrawable(addDrawable);
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+            imageView.setImageDrawable(placeHolderDrawable);
+            imgIsDefault = true;
+        }
+    };
+}
+
+     */
+
+/*
+imageView,
                     new Callback() {
                         @Override
                         public void onSuccess() {
                             // TODO: check if img urls are at maximum size = 4
 
                             // Set FloatingActionButton functionality and layout based on a picture is already added or not
-                            Drawable imgDrawable = imageView.getDrawable();
+                            //Drawable imgDrawable = imageView.getDrawable();
 
-                            imgIsDefault = defaultImagePic == imgDrawable;
+                            //imgIsDefault = defaultImagePic == imgDrawable;
                             Log.d(TAG, "onSuccess: " + imgIsDefault);
                             if (!imgIsDefault){
                                 // other option ic_menu_close_clear_cancel
@@ -115,28 +212,5 @@ public class ProfileImageAdapter extends BaseAdapter {
                             // other option ic_menu_close_clear_cancel
                             floatingActionButton.setImageDrawable(deleteDrawable);
                         }
-                    });
-        }
-
-
-        floatingActionButton.setOnClickListener(v -> {
-            // If default pic is set, you can add a picture, if not you can only delete
-            if (onGridItemClickListener != null){
-                if (imgIsDefault) {
-                    floatingActionButton.setImageDrawable(deleteDrawable);
-                    imgIsDefault = false;
-                    onGridItemClickListener.onGridItemAddClick(position);
-                } else{
-                    floatingActionButton.setImageDrawable(addDrawable);
-                    imageView.setImageDrawable(defaultImagePic);
-                    imgIsDefault = true;
-                    onGridItemClickListener.onGridItemDeleteClick(position);
-                    // TODO: b4 or after after functionality?
-                }
-            }
-        });
-
-
-        return convertView;
-    }
-}
+                    }
+ */
