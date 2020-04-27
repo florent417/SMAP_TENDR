@@ -66,7 +66,7 @@ public class ProfileActivity extends AppCompatActivity {
     GridView gridView;
     List<String> imgUrls = new ArrayList<>();
 
-    ProfileImageAdapter adapter;
+    private ProfileImageAdapter adapter;
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -86,13 +86,8 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
-        testGetProfile();
-        //testGetPicGrid();
+        getProfileAndPopulate();
 
-        //testGetPic();
-
-        //testAddProfile();
-        ButterKnife.bind(this);
         setSupportActionBar(_toolbar);
 
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
@@ -121,28 +116,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void testGetPicGrid(){
-        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
-        StorageReference russianDateRef = storage.getReference(pathToTestPic);
-        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                String testPath = task.getResult().toString();
-                imgUrls.add(testPath);
-                Log.d(TAG, imgUrls.get(0));
-                // Needs to be activity context and not application context
-                adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
-                gridView.setAdapter(adapter);
-                adapter.setOnGridItemClickListener(onGridItemClickListener);
-                Log.d(TAG, "Got path to russian babes: " + testPath);
-            }
-        });
-
-    }
-
-    //region Needed for later
-    private void testGetProfile(){
-
+    private void getProfileAndPopulate(){
         DocumentReference docRef = firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc);
         Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
 
@@ -170,7 +144,6 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
     }
-    //endregion
 
     private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
         @Override
@@ -217,11 +190,11 @@ public class ProfileActivity extends AppCompatActivity {
         }
     };
 
-    // Override onActivityResult method
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
 
+        // To revert the add/delete buttons
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_CANCELED){
             adapter.setImgUrls(imgUrls);
         }
@@ -254,44 +227,3 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 }
-
-//region Previously used code
-/*
-private void testAddProfile(){
-        List<String> genderprefs = new ArrayList<>();
-
-        genderprefs.add("Man");
-
-        Profile testProf = new Profile("firstName", 22, "occupation", "city", "country", "gender", "email", "password");
-        firestore.collection(Globals.FIREBASE_Profiles_PATH).add(testProf).addOnSuccessListener(
-                new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "Added " + documentReference.getId());
-                    }
-                }
-        ).addOnFailureListener(
-                new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                }
-        );
-    }
-
-    private void testGetPic(){
-        String pathToTestPic = "pictures/date-russian-girl-site-review.png";
-        StorageReference russianDateRef = storage.getReference(pathToTestPic);
-        russianDateRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                String testPath = task.getResult().toString();
-                Log.d(TAG, "Got path to russian babes: " + testPath);
-                Picasso.get().load(testPath).into(imgView);
-            }
-        });
-
-    }
- */
-//endregion

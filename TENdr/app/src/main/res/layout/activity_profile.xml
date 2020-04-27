@@ -13,11 +13,11 @@
         tools:context=".activities.ProfileActivity">
 
         <include
-        android:id="@+id/activity_auth_toolbar"
-        layout="@layout/toolbar_main"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/activity_auth_toolbar"
+            layout="@layout/toolbar_main"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <GridView
             android:id="@+id/ImagesProfileGrid"
@@ -33,7 +33,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/activity_auth_toolbar"
             tools:listitem="@layout/profile_image" />
 
         <EditText

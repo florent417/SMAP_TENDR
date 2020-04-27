@@ -37,7 +37,6 @@ public class Profile {
         this.userId = userId;
     }
 
-    public Profile(){}
     public String getFirstName() {
         return firstName;
     }
