@@ -16,17 +16,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import smap.gr15.appproject.tendr.models.Match;
 import smap.gr15.appproject.tendr.models.Profile;
-import smap.gr15.appproject.tendr.models.UnwantedMatches;
-import smap.gr15.appproject.tendr.models.WantedMatches;
+import smap.gr15.appproject.tendr.models.ProfileList;
 
 public class MatchService extends Service {
     private final String LOG = "MatchService LOG";
@@ -38,8 +34,8 @@ public class MatchService extends Service {
     private int UNWANTED_MATCHES_LIMIT = 100;
     private int WANTED_MATCHES_LIMIT = 100;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private WantedMatches wantedMatches;
-    private UnwantedMatches unwantedMatches;
+    private ProfileList wantedMatches;
+    private ProfileList unwantedMatches;
     private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -61,9 +57,14 @@ public class MatchService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
-        fetchOwnProfileData("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
+
+
+        /* for debugging purposes
+        fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
+        fetchOwnProfileData("alexboi@mail.dk");//("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
         createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
                 "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
+        */
 
     }
 
@@ -91,10 +92,6 @@ public class MatchService extends Service {
     public List<Profile> getSwipeableProfiles() {
         return swipeableProfiles;
     }
-
-  /*  private void initSwipeQueue() {
-
-    }*/
 
     public void swipeNo(Profile noThanksProfile) {
         swipeableProfiles.remove(noThanksProfile);
@@ -126,10 +123,10 @@ public class MatchService extends Service {
     }
 
     private void addProfileToUnwantedMatches(Profile profile) {
-        unwantedMatches.add(profile);
-        if (unwantedMatches.size() >= UNWANTED_MATCHES_LIMIT)
+        unwantedMatches.list.add(profile.getUserId());
+        if (unwantedMatches.list.size() >= UNWANTED_MATCHES_LIMIT)
         {
-            unwantedMatches.remove();
+            unwantedMatches.list.remove(unwantedMatches.list.size());
 
             // Update database with data. Remove just the one instead of sending whole list of 100
         }
@@ -137,10 +134,10 @@ public class MatchService extends Service {
     }
 
     private void addProfileToWantedMatches(Profile profile) {
-        wantedMatches.add(profile);
-        if (unwantedMatches.size() >= WANTED_MATCHES_LIMIT)
+        wantedMatches.list.add(profile.getUserId());
+        if (wantedMatches.list.size() >= WANTED_MATCHES_LIMIT)
         {
-            unwantedMatches.remove();
+            wantedMatches.list.remove(wantedMatches.list.size());
             // Update database with data. Remove just the one instead of sending whole list of 100
         }
 
@@ -156,7 +153,7 @@ public class MatchService extends Service {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d(LOG, "DocumentSnapshot data: " + document.getData());
-                        wantedMatches = document.toObject(WantedMatches.class); // what if null??
+                        wantedMatches = document.toObject(ProfileList.class); // what if null??
                     } else {
                         Log.d(LOG, "No such document");
                     }
