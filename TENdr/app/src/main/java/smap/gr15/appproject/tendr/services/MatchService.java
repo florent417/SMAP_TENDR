@@ -58,6 +58,7 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
 
+        // Testing
 
         /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
