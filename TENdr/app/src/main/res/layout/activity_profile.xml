@@ -12,6 +12,13 @@
         android:layout_height="wrap_content"
         tools:context=".activities.ProfileActivity">
 
+        <include
+        android:id="@+id/activity_auth_toolbar"
+        layout="@layout/toolbar_main"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
         <GridView
             android:id="@+id/ImagesProfileGrid"
             android:layout_width="0dp"
@@ -89,17 +96,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/GenderProfileEditText" />
-
-        <!-- <ImageView
-        android:id="@+id/profilePicture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/saveBtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/CityProfileEditText"
-        app:srcCompat="@drawable/common_google_signin_btn_icon_dark" /> -->
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
 

@@ -2,6 +2,7 @@ package smap.gr15.appproject.tendr.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.adapters.ProfileImageAdapter;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
@@ -65,6 +68,18 @@ public class ProfileActivity extends AppCompatActivity {
 
     ProfileImageAdapter adapter;
 
+    @BindView(R.id.activity_auth_toolbar)
+    Toolbar _toolbar;
+
+    @BindView(R.id.imageButton_settings)
+    ImageButton imageButton_settings;
+
+    @BindView(R.id.imageButton_main)
+    ImageButton imageButton_main;
+
+    @BindView(R.id.imageButton_profile)
+    ImageButton imageButton_profile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +92,17 @@ public class ProfileActivity extends AppCompatActivity {
         //testGetPic();
 
         //testAddProfile();
+        ButterKnife.bind(this);
+        setSupportActionBar(_toolbar);
+
+        helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
     @OnClick(R.id.SaveProfileButton)
