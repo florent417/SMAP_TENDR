@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="70dp"
+    android:id="@+id/cardView_chat_message_item">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/imageView_RecyclerView_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_user"/>
+
+        <TextView
+            android:id="@+id/textView_RecyclerView_chat_Name"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:text="@string/nametext"
+            app:layout_constraintStart_toEndOf="@+id/imageView_RecyclerView_chat"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView_RecyclerView_chat_Message"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/messagetext"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageView_RecyclerView_chat"
+            app:layout_constraintTop_toBottomOf="@+id/textView_RecyclerView_chat_Name" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

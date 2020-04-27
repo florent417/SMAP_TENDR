@@ -14,6 +14,9 @@
     <string name="Bio">Bio</string>
     <string name="Gender">Gender</string>
     <string name="Save">Save</string>
+    <string name="matchname">matchname</string>
+    <string name="send_your_match_a_message">send_your_match_a_message</string>
+    <string name="send">Send</string>
     <string-array name="Sex">
         <item>Male</item>
         <item>Female</item>
