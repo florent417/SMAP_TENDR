@@ -10,25 +10,33 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Chat;
 import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 
 public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.ViewHolder> {
 
-    private List<Conversation> conversationList;
+
+
+    private List<Chat> chatList;
     private Context context;
 
-    public ChatMessageAdapter(Context context, List<Conversation> conversationList)
+    public ChatMessageAdapter(Context context, List<Chat> chatList)
     {
-        this.conversationList = conversationList;
+        this.chatList = chatList;
         this.context = context;
     }
+
+
 
 
 
@@ -42,11 +50,10 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ChatMessageAdapter.ViewHolder holder, int position) {
-        Conversation conversationItem = conversationList.get(position);
+        Chat chatItem = chatList.get(position);
 
-        List<ChatMessage> messages =  conversationItem.getChatMessages();
-
-        holder.textViewName.setText(messages.get(position).getProfile().getFirstName());
+        //holder.
+        /*holder.textViewName.setText(messages.get(position).getProfile().getFirstName());
         holder.textViewMessage.setText(messages.get(position).getMessage());
         Picasso.with(context)
                 .load(messages.get(position).getProfile().getPictures().get(0))
@@ -54,11 +61,13 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 .error(android.R.drawable.sym_def_app_icon)
                 .into(holder.imageView);
 
+         */
+
     }
 
     @Override
     public int getItemCount() {
-        return conversationList.size();
+        return chatList.size();
     }
 
     public String getImagesUriFromFirebase(String Uri)
@@ -72,7 +81,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     class ViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView imageView;
-        private TextView textViewName, textViewMessage;
+        private TextView textViewName, textViewMessage, textViewTimeStamp;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -80,6 +89,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             imageView = itemView.findViewById(R.id.imageView_RecyclerView_chat);
             textViewName = itemView.findViewById(R.id.textView_RecyclerView_chat_Name);
             textViewMessage = itemView.findViewById(R.id.textView_RecyclerView_chat_Message);
+            textViewTimeStamp = itemView.findViewById(R.id.textView_RecyclerView_chat_timeStamp);
 
         }
     }

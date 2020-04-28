@@ -27,6 +27,15 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/textView_RecyclerView_chat_timeStamp"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:text="@string/timestamp"
+            app:layout_constraintEnd_toEndOf="@+id/textView_RecyclerView_chat_Message"
+            app:layout_constraintStart_toEndOf="@+id/textView_RecyclerView_chat_Name"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
             android:id="@+id/textView_RecyclerView_chat_Message"
             android:layout_width="0dp"
             android:layout_height="0dp"
