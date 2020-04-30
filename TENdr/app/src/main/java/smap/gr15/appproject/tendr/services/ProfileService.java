@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -19,6 +20,7 @@ import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileService extends Service {
+    private static final String TAG = "ProfileService";
     private final IBinder binder = new ProfileServiceBinder();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     // Maybe not needed
@@ -60,6 +62,17 @@ public class ProfileService extends Service {
         });
     }
 
+    // TODO: Change userid to check on runtime
+    public void editUserProfile(String userId, Profile userProfile){
+        db.collection(Globals.FIREBASE_Profiles_PATH).document(userId)
+                .set(userProfile).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "User profile edited");
+            }
+        });
+    }
+
     public void deletePhoto(String imageUrl, UserProfileOperationsListener listener){
         StorageReference deletePictureStorageRef = storage.getReferenceFromUrl(imageUrl);
 
@@ -73,8 +86,12 @@ public class ProfileService extends Service {
         // Todo: add message listener if soemthing failed
     }
 
+
+
     public interface UserProfileOperationsListener{
         void onGetProfileSuccess(Profile userProfile);
         void onDeletePhotoSuccess(String imageUrl);
+        // Todo: add message listener if soemthing failed
+        // Todo: add message for successful operations
     }
 }

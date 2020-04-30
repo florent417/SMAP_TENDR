@@ -147,6 +147,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ProfileService.UserProfileOperationsListener userProfileOperationsListener = new ProfileService.UserProfileOperationsListener(){
         @Override
         public void onGetProfileSuccess(Profile userProfile) {
+            currentLoggedInProfile = userProfile;
             bioEditText.setText(userProfile.getBio());
             occupationEditText.setText(userProfile.getOccupation());
             cityEditTxt.setText(userProfile.getCity());
@@ -176,13 +177,9 @@ public class ProfileActivity extends AppCompatActivity {
         currentLoggedInProfile.setCity(cityEditTxt.getText().toString());
         currentLoggedInProfile.setGender(genderEditTxt.getText().toString());
         currentLoggedInProfile.setPictures(imgUrls);
-        firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc)
-                .set(currentLoggedInProfile).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(ProfileActivity.this, "Great Succes!", Toast.LENGTH_LONG).show();
-            }
-        });
+
+        // TODO: Change userid to check on runtime
+        profileService.editUserProfile(existingDoc, currentLoggedInProfile);
     }
 
     private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
