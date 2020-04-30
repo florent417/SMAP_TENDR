@@ -48,11 +48,9 @@ import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
-    private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    private FirebaseStorage storage = FirebaseStorage.getInstance();
     private String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
-    private String pathToPics = "pictures/";
-    private String pathToUserPics = pathToPics + existingDoc + "/";
+    List<String> imgUrls = new ArrayList<>();
+    private ProfileImageAdapter adapter;
 
     // Connection to ProfileService
     private ServiceConnection profileServiceConnection;
@@ -73,22 +71,14 @@ public class ProfileActivity extends AppCompatActivity {
     EditText genderEditTxt;
     @BindView(R.id.SaveProfileButton)
     Button saveBtn;
-
     @BindView(R.id.ImagesProfileGrid)
     GridView gridView;
-    List<String> imgUrls = new ArrayList<>();
-
-    private ProfileImageAdapter adapter;
-
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
-
     @BindView(R.id.imageButton_settings)
     ImageButton imageButton_settings;
-
     @BindView(R.id.imageButton_main)
     ImageButton imageButton_main;
-
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
 
@@ -101,8 +91,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         setupProfileServiceConnection();
 
-        //getProfileAndPopulate();
-
         setSupportActionBar(_toolbar);
 
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
@@ -112,6 +100,14 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+    }
+
+    // When cancellation of picture choice happens
+    // the connection is turned off, therefore we need to reconnect
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupProfileServiceConnection();
     }
 
     @Override
@@ -201,15 +197,8 @@ public class ProfileActivity extends AppCompatActivity {
     private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
         @Override
         public void onGridItemAddClick(int position) {
-            /*
-                Intent galleryIntent = new Intent(
-                        Intent.ACTION_PICK,
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(Intent.createChooser(galleryIntent, "Complete action using"), RC_PHOTO_PICKER);
-            */
             // Move comment out, since multiple functions use the code in the link
             // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
-            // Multiple options, seems like this is better than the one above
             // Defining Implicit Intent to mobile gallery
             Intent intent = new Intent();
             intent.setType("image/*");
@@ -222,8 +211,8 @@ public class ProfileActivity extends AppCompatActivity {
             progressDialog.setTitle("Deleting image...");
             progressDialog.show();
 
+            // TODO: Maybe work on the urls on the profile urls
             String imageUrl = imgUrls.get(position);
-
             profileService.deletePhoto(imageUrl, userProfileOperationsListener);
         }
     };
@@ -247,7 +236,6 @@ public class ProfileActivity extends AppCompatActivity {
             Uri filePath = data.getData();
 
             profileService.uploadPhoto(filePath, userProfileOperationsListener);
-
         }
     }
 }
