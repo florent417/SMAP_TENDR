@@ -13,6 +13,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
@@ -20,8 +21,8 @@ import smap.gr15.appproject.tendr.utils.Globals;
 public class ProfileService extends Service {
     private final IBinder binder = new ProfileServiceBinder();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    // Maybe not needed
     private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private String pathToPics = "pictures/";
 
     //region Binder Implementaton
     // Ref: https://developer.android.com/guide/components/bound-services
@@ -59,7 +60,21 @@ public class ProfileService extends Service {
         });
     }
 
+    public void deletePhoto(String imageUrl, UserProfileOperationsListener listener){
+        StorageReference deletePictureStorageRef = storage.getReferenceFromUrl(imageUrl);
+
+        deletePictureStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                listener.onDeletePhotoSuccess(imageUrl);
+            }
+        });
+
+        // Todo: add message listener if soemthing failed
+    }
+
     public interface UserProfileOperationsListener{
         void onGetProfileSuccess(Profile userProfile);
+        void onDeletePhotoSuccess(String imageUrl);
     }
 }

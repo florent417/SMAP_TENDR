@@ -60,6 +60,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private Profile currentLoggedInProfile = null;
     private static int PICK_IMAGE_REQUEST =  2;
+    private ProgressDialog progressDialog;
 
     @BindView(R.id.BioProfileMultilineText)
     EditText bioEditText;
@@ -95,6 +96,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
+        progressDialog  = new ProgressDialog(ProfileActivity.this);
 
         setupProfileServiceConnection();
 
@@ -157,6 +159,14 @@ public class ProfileActivity extends AppCompatActivity {
             gridView.setAdapter(adapter);
             adapter.setOnGridItemClickListener(onGridItemClickListener);
         }
+
+        @Override
+        public void onDeletePhotoSuccess(String imageUrl){
+            imgUrls.remove(imageUrl);
+            adapter.setImgUrls(imgUrls);
+            progressDialog.dismiss();
+            Toast.makeText(ProfileActivity.this, "Image deleted", Toast.LENGTH_SHORT).show();
+        }
     };
 
     @OnClick(R.id.SaveProfileButton)
@@ -196,27 +206,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         @Override
         public void onGridItemDeleteClick(int position) {
-            ProgressDialog progressDialog  = new ProgressDialog(ProfileActivity.this);
             progressDialog.setTitle("Deleting image...");
             progressDialog.show();
 
             String imageUrl = imgUrls.get(position);
-            StorageReference deletePicStorageRef = storage.getReferenceFromUrl(imageUrl);
 
-            deletePicStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    imgUrls.remove(position);
-                    adapter.setImgUrls(imgUrls);
-                    progressDialog.dismiss();
-                    Toast.makeText(ProfileActivity.this, "Image deleted", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(ProfileActivity.this, "Something went wrong. Couldn't delete image", Toast.LENGTH_SHORT).show();
-                }
-            });
+            profileService.deletePhoto(imageUrl, userProfileOperationsListener);
         }
     };
 
