@@ -40,6 +40,9 @@ public class MatchService extends Service {
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    //test prof
+    private String testProfUId = "C4Eb9BM6f1chIlH1AzfR";
+
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -58,6 +61,8 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
 
+        fetchOwnProfileData(testProfUId);
+
         // Testing
 
         /* for debugging purposes
@@ -67,6 +72,10 @@ public class MatchService extends Service {
                 "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
         */
 
+    }
+
+    public List<Profile> getSuccessFullMatches(){
+        return successfulMatches;
     }
 
     @Override

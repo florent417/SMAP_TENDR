@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         setupMatchService();
 
         if(savedInstanceState == null){
-            matchesFragment = new MatchesFragment();
+            matchesFragment = new MatchesFragment(matchService);
 
             getSupportFragmentManager().beginTransaction().add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES).commit();
         }

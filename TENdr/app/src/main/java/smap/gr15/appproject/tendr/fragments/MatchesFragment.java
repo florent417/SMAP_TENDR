@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.services.MatchService;
 
 
 /**
@@ -26,8 +27,14 @@ public class MatchesFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private MatchService matchService;
+
     public MatchesFragment() {
         // Required empty public constructor
+    }
+
+    public MatchesFragment(MatchService matchService){
+        this.matchService = matchService;
     }
 
     /**
