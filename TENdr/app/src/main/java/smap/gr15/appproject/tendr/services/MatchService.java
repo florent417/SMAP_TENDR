@@ -11,8 +11,10 @@ import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -36,7 +38,7 @@ public class MatchService extends Service {
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
     private ProfileList wantedMatches;
     private ProfileList unwantedMatches;
-    private List<Profile> successfulMatches = new ArrayList<Profile>();
+    private ArrayList<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -58,10 +60,8 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
 
-        // Testing
-
-        /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
+        /*
         fetchOwnProfileData("alexboi@mail.dk");//("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
         createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
                 "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
@@ -86,11 +86,17 @@ public class MatchService extends Service {
 
     // Should perhaps also have a broadcast method. Activities can get all matches at startup, and
     // should instantly get updated if a new match happens
-    public List<Profile> getMatches() {
+    public ArrayList<Profile> getMatches() {
         return successfulMatches;
     }
 
-    public List<Profile> getSwipeableProfiles() {
+    public LinkedList<Profile> getSwipeableProfiles() {
+        // return profiles, then empty and get new profiles
+
+        if (swipeableProfiles.size() == 0) {
+            updateSwipeQueueIfNeeded();
+        }
+
         return swipeableProfiles;
     }
 
@@ -218,7 +224,7 @@ public class MatchService extends Service {
 
     // Currently has no smart algorithme to prefer people of same city, only matches base on same country
     private void fetchProfilesForSwiping(Profile ownProfiles) {
-        db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+        db.collection(PROFILES_DB)
                 .whereEqualTo("country", ownProfiles.getCountry())
                 .whereArrayContains("genderPreference", ownProfiles.getGender())
                 .limit(PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE)
