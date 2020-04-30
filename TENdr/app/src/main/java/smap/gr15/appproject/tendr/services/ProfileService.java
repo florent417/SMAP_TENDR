@@ -122,13 +122,12 @@ public class ProfileService extends Service {
         // Todo: add message listener if soemthing failed
     }
 
-
-
     public interface UserProfileOperationsListener{
         void onGetProfileSuccess(Profile userProfile);
         void onUploadPhotoSuccess(String imageUrl);
         void onDeletePhotoSuccess(String imageUrl);
         // Todo: add message listener if soemthing failed
         // Todo: add message for successful operations
+        // TODO: is it necessary to have a callback for edituserprofile??
     }
 }

@@ -114,6 +114,14 @@ public class ProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
+    @Override
+    protected void onStop() {
+        profileService = null;
+        unbindService(profileServiceConnection);
+        profileServiceBound = false;
+        super.onStop();
+    }
+
     private void setupProfileServiceConnection(){
         startService(new Intent(ProfileActivity.this, ProfileService.class));
         setupConnectionToProfileService();
