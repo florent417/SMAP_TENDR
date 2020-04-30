@@ -28,7 +28,7 @@ public class MatchesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_matches);
+        setContentView(R.layout.fragment_matches);
         ButterKnife.bind(this);
         setSupportActionBar(_toolbar);
 
