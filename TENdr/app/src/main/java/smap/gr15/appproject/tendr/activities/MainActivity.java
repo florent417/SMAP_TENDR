@@ -6,20 +6,16 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageButton;
 import android.os.IBinder;
-import android.util.Log;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import smap.gr15.appproject.tendr.R;
-import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.fragments.MatchesFragment;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.services.MatchService;
 
@@ -41,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
 
+    private MatchesFragment matchesFragment;
+    private final String FRAGMENT_MATCHES = "fragment_matches";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
 
         setupMatchService();
+
+        if(savedInstanceState == null){
+            matchesFragment = new MatchesFragment();
+
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES).commit();
+        }
     }
 
     private void setupMatchService() {
