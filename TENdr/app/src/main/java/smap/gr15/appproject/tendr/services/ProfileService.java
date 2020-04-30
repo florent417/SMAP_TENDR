@@ -2,12 +2,16 @@ package smap.gr15.appproject.tendr.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -15,6 +19,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.util.UUID;
 
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.Globals;
@@ -73,6 +80,35 @@ public class ProfileService extends Service {
         });
     }
 
+    public void uploadPhoto(Uri imagePath, UserProfileOperationsListener listener){
+        StorageReference picStorageRef = storage.getReference().child(Globals.FIREBASE_STORAGE_PICTURES_PATH).child(UUID.randomUUID().toString());
+
+        UploadTask uploadPictureTask = picStorageRef.putFile(imagePath);
+
+        Task<Uri> pictureUrlTask = uploadPictureTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if(!task.isSuccessful()){
+                    throw task.getException();
+                }
+
+                return picStorageRef.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                String imageDownloadUrl = null;
+                try {
+                    imageDownloadUrl = task.getResult().toString();
+                } catch (Exception e){
+                    Log.d(TAG, e.toString());
+                }
+                // TODO: What to do if imageurl is null?
+                listener.onUploadPhotoSuccess(imageDownloadUrl);
+            }
+        });
+    }
+
     public void deletePhoto(String imageUrl, UserProfileOperationsListener listener){
         StorageReference deletePictureStorageRef = storage.getReferenceFromUrl(imageUrl);
 
@@ -90,6 +126,7 @@ public class ProfileService extends Service {
 
     public interface UserProfileOperationsListener{
         void onGetProfileSuccess(Profile userProfile);
+        void onUploadPhotoSuccess(String imageUrl);
         void onDeletePhotoSuccess(String imageUrl);
         // Todo: add message listener if soemthing failed
         // Todo: add message for successful operations

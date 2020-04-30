@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -168,6 +169,13 @@ public class ProfileActivity extends AppCompatActivity {
             progressDialog.dismiss();
             Toast.makeText(ProfileActivity.this, "Image deleted", Toast.LENGTH_SHORT).show();
         }
+
+        @Override
+        public void onUploadPhotoSuccess(String imageUrl){
+            imgUrls.add(imageUrl);
+            adapter.setImgUrls(imgUrls);
+            progressDialog.dismiss();
+        }
     };
 
     @OnClick(R.id.SaveProfileButton)
@@ -225,27 +233,13 @@ public class ProfileActivity extends AppCompatActivity {
 
             // Get the Uri of data
             // Code for showing progressDialog while uploading
-            ProgressDialog progressDialog  = new ProgressDialog(ProfileActivity.this);
             progressDialog.setTitle("Uploading image...");
             progressDialog.show();
 
             Uri filePath = data.getData();
-            StorageReference picStorageRef = storage.getReference().child(pathToUserPics + UUID.randomUUID().toString());
 
-            picStorageRef.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(ProfileActivity.this, "Image uploaded", Toast.LENGTH_SHORT).show();
-                    picStorageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Uri> task) {
-                            imgUrls.add(task.getResult().toString());
-                            adapter.setImgUrls(imgUrls);
-                            progressDialog.dismiss();
-                        }
-                    });
-                }
-            });
+            profileService.uploadPhoto(filePath, userProfileOperationsListener);
+
         }
     }
 }
