@@ -7,10 +7,21 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+
 import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileService extends Service {
-    private final IBinder binder = new LocalBinder();
+    private final IBinder binder = new ProfileServiceBinder();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private String pathToPics = "pictures/";
 
     //region Binder Implementaton
     // Ref: https://developer.android.com/guide/components/bound-services
@@ -25,7 +36,7 @@ public class ProfileService extends Service {
      * runs in the same process as its clients, we don't need to deal with IPC.
      */
     // use another name
-    public class LocalBinder extends Binder {
+    public class ProfileServiceBinder extends Binder {
         public ProfileService getService() {
             // Return this instance of LocalService so clients can call public methods
             return ProfileService.this;
@@ -33,7 +44,22 @@ public class ProfileService extends Service {
     }
     //endregion
 
-    public Profile getUserProfile(){
-        return null;
+    public void getUserProfile(String userId, UserProfileOperationsListener listener){
+        DocumentReference docRef = db.collection(Globals.FIREBASE_Profiles_PATH).document(userId);
+        Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
+
+        documentSnapshotTask.addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if(documentSnapshot.exists()){
+                    Profile userProfile = documentSnapshot.toObject(Profile.class);
+                    listener.onGetProfileSuccess(userProfile);
+                }
+            }
+        });
+    }
+
+    public interface UserProfileOperationsListener{
+        void onGetProfileSuccess(Profile userProfile);
     }
 }

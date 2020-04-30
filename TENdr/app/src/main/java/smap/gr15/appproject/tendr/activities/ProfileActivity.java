@@ -5,9 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +39,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.services.ProfileService;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.adapters.ProfileImageAdapter;
 import smap.gr15.appproject.tendr.models.Profile;
@@ -47,6 +52,11 @@ public class ProfileActivity extends AppCompatActivity {
     private String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
     private String pathToPics = "pictures/";
     private String pathToUserPics = pathToPics + existingDoc + "/";
+
+    // Connection to ProfileService
+    private ServiceConnection profileServiceConnection;
+    private ProfileService profileService;
+    private boolean profileServiceBound;
 
     private Profile currentLoggedInProfile = null;
     private static int PICK_IMAGE_REQUEST =  2;
@@ -86,7 +96,9 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
-        getProfileAndPopulate();
+        setupProfileServiceConnection();
+
+        //getProfileAndPopulate();
 
         setSupportActionBar(_toolbar);
 
@@ -96,9 +108,56 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
+
+    private void setupProfileServiceConnection(){
+        startService(new Intent(ProfileActivity.this, ProfileService.class));
+        setupConnectionToProfileService();
+        bindToProfileService();
+    }
+
+    private void bindToProfileService() {
+        if (!profileServiceBound) {
+            bindService(new Intent(ProfileActivity.this,
+                    ProfileService.class), profileServiceConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void setupConnectionToProfileService(){
+        profileServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                profileService = ((ProfileService.ProfileServiceBinder)service).getService();
+                Log.d(TAG, "profile activity connected to profile service");
+                profileServiceBound = true;
+                profileService.getUserProfile(existingDoc, userProfileOperationsListener);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                profileService = null;
+                profileServiceBound = false;
+            }
+        };
+    }
+
+    private ProfileService.UserProfileOperationsListener userProfileOperationsListener = new ProfileService.UserProfileOperationsListener(){
+        @Override
+        public void onGetProfileSuccess(Profile userProfile) {
+            bioEditText.setText(userProfile.getBio());
+            occupationEditText.setText(userProfile.getOccupation());
+            cityEditTxt.setText(userProfile.getCity());
+            genderEditTxt.setText(userProfile.getGender());
+
+            if (userProfile.getPictures() != null)
+                imgUrls = userProfile.getPictures();
+
+            adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
+            gridView.setAdapter(adapter);
+            adapter.setOnGridItemClickListener(onGridItemClickListener);
+        }
+    };
 
     @OnClick(R.id.SaveProfileButton)
     void saveBtn(View view){
@@ -112,35 +171,6 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(ProfileActivity.this, "Great Succes!", Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void getProfileAndPopulate(){
-        DocumentReference docRef = firestore.collection(Globals.FIREBASE_Profiles_PATH).document(existingDoc);
-        Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
-
-        documentSnapshotTask.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                DocumentSnapshot documentSnapshot = task.getResult();
-
-                if(documentSnapshot.exists()){
-                    currentLoggedInProfile = documentSnapshot.toObject(Profile.class);
-
-                    // Populate activity
-                    bioEditText.setText(currentLoggedInProfile.getBio());
-                    occupationEditText.setText(currentLoggedInProfile.getOccupation());
-                    cityEditTxt.setText(currentLoggedInProfile.getCity());
-                    genderEditTxt.setText(currentLoggedInProfile.getGender());
-
-                    if (currentLoggedInProfile.getPictures() != null)
-                        imgUrls = currentLoggedInProfile.getPictures();
-
-                    adapter = new ProfileImageAdapter(ProfileActivity.this, imgUrls);
-                    gridView.setAdapter(adapter);
-                    adapter.setOnGridItemClickListener(onGridItemClickListener);
-                }
             }
         });
     }
