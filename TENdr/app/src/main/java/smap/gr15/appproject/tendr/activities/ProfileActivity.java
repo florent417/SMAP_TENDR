@@ -32,8 +32,6 @@ import smap.gr15.appproject.tendr.models.Profile;
 
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
-    // TODO: delete when reaching connectivity in app
-    private String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
 
     private List<String> imgUrls = new ArrayList<>();
     private ProfileImageAdapter adapter;
@@ -47,7 +45,7 @@ public class ProfileActivity extends AppCompatActivity {
     private static int PICK_IMAGE_REQUEST =  2;
     private ProgressDialog progressDialog;
 
-    // All the views for the activity
+    //region Views for ProfileActivity
     @BindView(R.id.BioProfileMultilineText)
     EditText bioEditText;
     @BindView(R.id.OccupationProfileEditText)
@@ -68,6 +66,7 @@ public class ProfileActivity extends AppCompatActivity {
     ImageButton imageButton_main;
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
+    //endregion
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,20 +88,12 @@ public class ProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
-    // When cancellation of choosing a picture happens
-    // the connection is turned off, therefore we need to reconnect
     @Override
-    protected void onResume() {
-        super.onResume();
-        setupProfileServiceConnection();
-    }
-
-    @Override
-    protected void onStop() {
+    protected void onDestroy() {
         profileService = null;
         unbindService(profileServiceConnection);
         profileServiceBound = false;
-        super.onStop();
+        super.onDestroy();
     }
 
     //region Profile Service Connection
@@ -126,7 +117,7 @@ public class ProfileActivity extends AppCompatActivity {
                 profileService = ((ProfileService.ProfileServiceBinder)service).getService();
                 Log.d(TAG, "profile activity connected to profile service");
                 profileServiceBound = true;
-                profileService.getUserProfile(existingDoc, userProfileOperationsListener);
+                profileService.getUserProfile(userProfileOperationsListener);
             }
 
             @Override
@@ -148,7 +139,7 @@ public class ProfileActivity extends AppCompatActivity {
         currentLoggedInProfile.setPictures(imgUrls);
 
         // TODO: Change userId to check on runtime
-        profileService.editUserProfile(existingDoc, currentLoggedInProfile, userProfileOperationsListener);
+        profileService.editUserProfile(currentLoggedInProfile, userProfileOperationsListener);
     }
 
     private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
@@ -210,6 +201,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         public void onProfileDataSaved(String message){
             Toast.makeText(ProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         public void onOperationFailedMessage(String messageToShow){

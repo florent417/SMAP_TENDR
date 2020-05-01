@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,11 +35,16 @@ public class ProfileService extends Service {
     private static final String TAG_PHOTO_DELETION_FAILED = "Unable to delete photo. Check internet connection";
     private static final String TAG_PROFILE_DATA_SAVED = "Profile updated!";
     private static final String TAG_PROFILE_DATA_SAVE_FAILED = "Unable to update profile. Check internet connection";
+    private String currentLoggedInUserId = null;
 
     private final IBinder binder = new ProfileServiceBinder();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     // Maybe not needed
     private FirebaseStorage storage = FirebaseStorage.getInstance();
+
+    public ProfileService(){
+        currentLoggedInUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
 
     //region Binder Implementaton
     // Ref: https://developer.android.com/guide/components/bound-services
@@ -61,8 +67,8 @@ public class ProfileService extends Service {
     }
     //endregion
 
-    public void getUserProfile(String userId, UserProfileOperationsListener listener){
-        DocumentReference docRef = db.collection(Globals.FIREBASE_Profiles_PATH).document(userId);
+    public void getUserProfile(UserProfileOperationsListener listener){
+        DocumentReference docRef = db.collection(Globals.FIREBASE_Profiles_PATH).document(currentLoggedInUserId);
         Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
 
         documentSnapshotTask.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -81,10 +87,9 @@ public class ProfileService extends Service {
     }
 
     // TODO: Change userid to check on runtime
-    public void editUserProfile(String userId, Profile userProfile, UserProfileOperationsListener listener){
-
+    public void editUserProfile(Profile userProfile, UserProfileOperationsListener listener){
         db.collection(Globals.FIREBASE_Profiles_PATH)
-                .document(userId).set(userProfile)
+                .document(currentLoggedInUserId).set(userProfile)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -95,14 +100,6 @@ public class ProfileService extends Service {
                         }
                     }
                 });
-
-        db.collection(Globals.FIREBASE_Profiles_PATH).document(userId)
-                .set(userProfile).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "User profile edited");
-            }
-        });
     }
 
     // reference : https://firebase.google.com/docs/storage/android/upload-files#get_a_download_url
