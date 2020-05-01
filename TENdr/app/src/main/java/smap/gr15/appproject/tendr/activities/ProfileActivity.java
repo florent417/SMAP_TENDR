@@ -107,6 +107,7 @@ public class ProfileActivity extends AppCompatActivity {
         if (!profileServiceBound) {
             bindService(new Intent(ProfileActivity.this,
                     ProfileService.class), profileServiceConnection, Context.BIND_AUTO_CREATE);
+            profileServiceBound = true;
         }
     }
 
@@ -116,14 +117,12 @@ public class ProfileActivity extends AppCompatActivity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 profileService = ((ProfileService.ProfileServiceBinder)service).getService();
                 Log.d(TAG, "profile activity connected to profile service");
-                profileServiceBound = true;
                 profileService.getUserProfile(userProfileOperationsListener);
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 profileService = null;
-                profileServiceBound = false;
             }
         };
     }
