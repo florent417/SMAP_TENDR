@@ -1,6 +1,4 @@
 package smap.gr15.appproject.tendr.activities;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -18,23 +16,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
-
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import android.widget.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,12 +29,13 @@ import smap.gr15.appproject.tendr.services.ProfileService;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.adapters.ProfileImageAdapter;
 import smap.gr15.appproject.tendr.models.Profile;
-import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
+    // TODO: delete when reaching connectivity in app
     private String existingDoc = "9JMORa2zRPWqeMEgt3IAsaXLhHC2";
-    List<String> imgUrls = new ArrayList<>();
+
+    private List<String> imgUrls = new ArrayList<>();
     private ProfileImageAdapter adapter;
 
     // Connection to ProfileService
@@ -61,6 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
     private static int PICK_IMAGE_REQUEST =  2;
     private ProgressDialog progressDialog;
 
+    // All the views for the activity
     @BindView(R.id.BioProfileMultilineText)
     EditText bioEditText;
     @BindView(R.id.OccupationProfileEditText)
@@ -102,7 +89,7 @@ public class ProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
-    // When cancellation of picture choice happens
+    // When cancellation of choosing a picture happens
     // the connection is turned off, therefore we need to reconnect
     @Override
     protected void onResume() {
@@ -118,6 +105,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    //region Profile Service Connection
     private void setupProfileServiceConnection(){
         startService(new Intent(ProfileActivity.this, ProfileService.class));
         setupConnectionToProfileService();
@@ -148,7 +136,46 @@ public class ProfileActivity extends AppCompatActivity {
             }
         };
     }
+    //endregion
 
+    //region OnClickListeners
+    @OnClick(R.id.SaveProfileButton)
+    void onClickSaveBtn(View view){
+        currentLoggedInProfile.setBio(bioEditText.getText().toString());
+        currentLoggedInProfile.setOccupation(occupationEditText.getText().toString());
+        currentLoggedInProfile.setCity(cityEditTxt.getText().toString());
+        currentLoggedInProfile.setGender(genderEditTxt.getText().toString());
+        currentLoggedInProfile.setPictures(imgUrls);
+
+        // TODO: Change userId to check on runtime
+        profileService.editUserProfile(existingDoc, currentLoggedInProfile, userProfileOperationsListener);
+    }
+
+    private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
+        @Override
+        public void onGridItemAddClick(int position) {
+            // Move comment out, since multiple functions use the code in the link
+            // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
+            // Defining Implicit Intent to mobile gallery
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent,"Select Image from here..."), PICK_IMAGE_REQUEST);
+        }
+
+        @Override
+        public void onGridItemDeleteClick(int position) {
+            progressDialog.setTitle("Deleting image...");
+            progressDialog.show();
+
+            // TODO: Maybe work on the urls on the profile urls
+            String imageUrl = imgUrls.get(position);
+            profileService.deletePhoto(imageUrl, userProfileOperationsListener);
+        }
+    };
+    //endregion
+
+    //region Implements of when operations from service are done
     private ProfileService.UserProfileOperationsListener userProfileOperationsListener = new ProfileService.UserProfileOperationsListener(){
         @Override
         public void onGetProfileSuccess(Profile userProfile) {
@@ -180,61 +207,33 @@ public class ProfileActivity extends AppCompatActivity {
             adapter.setImgUrls(imgUrls);
             progressDialog.dismiss();
         }
-    };
 
-    @OnClick(R.id.SaveProfileButton)
-    void saveBtn(View view){
-        currentLoggedInProfile.setBio(bioEditText.getText().toString());
-        currentLoggedInProfile.setOccupation(occupationEditText.getText().toString());
-        currentLoggedInProfile.setCity(cityEditTxt.getText().toString());
-        currentLoggedInProfile.setGender(genderEditTxt.getText().toString());
-        currentLoggedInProfile.setPictures(imgUrls);
-
-        // TODO: Change userid to check on runtime
-        profileService.editUserProfile(existingDoc, currentLoggedInProfile);
-    }
-
-    private ProfileImageAdapter.OnGridItemClickListener onGridItemClickListener = new ProfileImageAdapter.OnGridItemClickListener() {
-        @Override
-        public void onGridItemAddClick(int position) {
-            // Move comment out, since multiple functions use the code in the link
-            // Ref : https://www.geeksforgeeks.org/android-how-to-upload-an-image-on-firebase-storage/
-            // Defining Implicit Intent to mobile gallery
-            Intent intent = new Intent();
-            intent.setType("image/*");
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent,"Select Image from here..."), PICK_IMAGE_REQUEST);
+        public void onProfileDataSaved(String message){
+            Toast.makeText(ProfileActivity.this, message, Toast.LENGTH_SHORT).show();
         }
 
-        @Override
-        public void onGridItemDeleteClick(int position) {
-            progressDialog.setTitle("Deleting image...");
-            progressDialog.show();
-
-            // TODO: Maybe work on the urls on the profile urls
-            String imageUrl = imgUrls.get(position);
-            profileService.deletePhoto(imageUrl, userProfileOperationsListener);
+        public void onOperationFailedMessage(String messageToShow){
+            Toast.makeText(ProfileActivity.this, messageToShow, Toast.LENGTH_LONG).show();
         }
     };
+    //endregion
 
+    // When uploading a picture. User can either choose to cancel or upload pic
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
-
         // To revert the add/delete buttons
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_CANCELED){
             adapter.setImgUrls(imgUrls);
         }
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-
             // Get the Uri of data
             // Code for showing progressDialog while uploading
             progressDialog.setTitle("Uploading image...");
             progressDialog.show();
 
             Uri filePath = data.getData();
-
             profileService.uploadPhoto(filePath, userProfileOperationsListener);
         }
     }
