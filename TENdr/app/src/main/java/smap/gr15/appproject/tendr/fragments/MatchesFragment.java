@@ -2,13 +2,29 @@ package smap.gr15.appproject.tendr.fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.models.ProfileList;
 import smap.gr15.appproject.tendr.services.MatchService;
 
 
@@ -18,6 +34,16 @@ import smap.gr15.appproject.tendr.services.MatchService;
  * create an instance of this fragment.
  */
 public class MatchesFragment extends Fragment {
+    private final String LOG = "MatchService LOG";
+    private int MATCH_LIMIT = 10;
+    private final String PROFILES_DB = "profiles";
+    private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
+    private ProfileList wantedMatches;
+    private ProfileList unwantedMatches;
+    private List<Profile> successfulMatches = new ArrayList<Profile>();
+    private Profile ownProfile;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -69,5 +95,52 @@ public class MatchesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_matches, container, false);
+    }
+
+    private void fetchSuccessfulMatches(List<String> matchIds) {
+        if (!matchIds.isEmpty()) {
+            db.collection(PROFILES_DB)
+                    .whereIn("email", matchIds)
+                    .limit(MATCH_LIMIT)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                successfulMatches = new ArrayList<Profile>();
+                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                    Log.d(LOG, document.getId() + " => " + document.getData());
+                                    Profile matchedProfile = document.toObject(Profile.class);
+                                    successfulMatches.add(matchedProfile);
+                                }
+                            } else {
+                                Log.d(LOG, "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void fetchConversations(List) {
+        db.collection(PROFILES_DB)
+                .whereIn("email", matchIds)
+                .limit(MATCH_LIMIT)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            successfulMatches = new ArrayList<Profile>();
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                Log.d(LOG, document.getId() + " => " + document.getData());
+                                Profile matchedProfile = document.toObject(Profile.class);
+                                successfulMatches.add(matchedProfile);
+                            }
+                        } else {
+                            Log.d(LOG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
     }
 }
