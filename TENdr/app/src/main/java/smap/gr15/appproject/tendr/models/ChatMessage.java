@@ -1,7 +1,38 @@
 package smap.gr15.appproject.tendr.models;
 
+import java.util.Date;
+
 public class ChatMessage {
+
     private String message;
     private String sender;
-    // Dont send gifs and pictures
+    private Date timeStamp;
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+
+    public Date getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Date timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+
 }
