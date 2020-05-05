@@ -4,6 +4,30 @@ import java.util.List;
 
 public class Conversation {
     private List<ChatMessage> chatMessages;
-    private Profile firstToSwipe;
-    private Profile secondToSwipe;
+    private String firstUserId;
+    private String secondUserId;
+
+    public List<ChatMessage> getChatMessages() {
+        return chatMessages;
+    }
+
+    public void setChatMessages(List<ChatMessage> chatMessages) {
+        this.chatMessages = chatMessages;
+    }
+
+    public String getFirstUserId() {
+        return firstUserId;
+    }
+
+    public void setFirstUserId(String firstUserId) {
+        this.firstUserId = firstUserId;
+    }
+
+    public String getSecondUserId() {
+        return secondUserId;
+    }
+
+    public void setSecondUserId(String secondUserId) {
+        this.secondUserId = secondUserId;
+    }
 }

@@ -12,8 +12,10 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -23,9 +25,11 @@ import java.util.List;
 import java.util.Objects;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
 import smap.gr15.appproject.tendr.services.MatchService;
+import smap.gr15.appproject.tendr.utils.Globals;
 
 
 /**
@@ -34,7 +38,7 @@ import smap.gr15.appproject.tendr.services.MatchService;
  * create an instance of this fragment.
  */
 public class MatchesFragment extends Fragment {
-    private final String LOG = "MatchService LOG";
+    private static final String TAG = "MatchesFragment";
     private int MATCH_LIMIT = 10;
     private final String PROFILES_DB = "profiles";
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
@@ -43,6 +47,9 @@ public class MatchesFragment extends Fragment {
     private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private String testUID1 = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
+    private String testUID2 = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
+    private String ref = "jN9BhcJ4LZpnoDzXNVsJ";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -88,6 +95,7 @@ public class MatchesFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        getConversations();
     }
 
     @Override
@@ -97,30 +105,30 @@ public class MatchesFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_matches, container, false);
     }
 
-    private void fetchSuccessfulMatches(List<String> matchIds) {
-        if (!matchIds.isEmpty()) {
-            db.collection(PROFILES_DB)
-                    .whereIn("email", matchIds)
-                    .limit(MATCH_LIMIT)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-                                successfulMatches = new ArrayList<Profile>();
-                                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                    Log.d(LOG, document.getId() + " => " + document.getData());
-                                    Profile matchedProfile = document.toObject(Profile.class);
-                                    successfulMatches.add(matchedProfile);
-                                }
-                            } else {
-                                Log.d(LOG, "Error getting documents: ", task.getException());
-                            }
-                        }
-                    });
-        }
+    private void getConversations(){
+        CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
+        Query getConvosQuery = findMatches
+                .whereGreaterThanOrEqualTo("combinedUserUid", testUID1)
+                .whereLessThanOrEqualTo("combinedUserUid", testUID1);
+                //.whereEqualTo("secondUserId", "hejmeddig");
+
+        /*
+        .whereGreaterThanOrEqualTo("combinedUserUid", testUID1)
+                .whereLessThanOrEqualTo("combinedUserUid", testUID1);
+         */
+
+        getConvosQuery.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        List<Conversation> convos = new ArrayList<>();
+                        convos = task.getResult().toObjects(Conversation.class);
+                        Log.d(TAG, Integer.toString(convos.size()));
+                    }
+                });
     }
 
+    /*
     private void fetchConversations(List) {
         db.collection(PROFILES_DB)
                 .whereIn("email", matchIds)
@@ -143,4 +151,6 @@ public class MatchesFragment extends Fragment {
                 });
 
     }
+
+     */
 }
