@@ -9,7 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -20,6 +25,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -27,15 +33,20 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firestore.v1.Document;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.Conversation;
+import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.ChatMessageAdapter;
 import smap.gr15.appproject.tendr.utils.helpers;
+
+import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
 
 // Inspired from this youtube Video https://www.youtube.com/watch?v=n8QWeqeUeA0
 public class ChatActivity extends AppCompatActivity {
@@ -51,12 +62,28 @@ public class ChatActivity extends AppCompatActivity {
     public ChatMessageAdapter adapter;
     private static String ConversationOppositeUserID;
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private String referenceToListCollection;
+    private Profile myProfile;
+    private Profile matchProfile;
     DocumentReference conversationRef;
     List<ChatMessage> chatMessages = new ArrayList<>();
     Conversation conversation = new Conversation();
+    ListenerRegistration registration;
 
     @BindView(R.id.RecyclerView_chatActivity)
     RecyclerView recyclerView;
+
+    @BindView(R.id.imageViewBack_chatActivity)
+    ImageView backButton;
+
+    @BindView(R.id.textViewName_chatActivity)
+    TextView matchName;
+
+    @BindView(R.id.editTextChatAcitivty)
+    EditText editTextChatAcitivty;
+
+    @BindView(R.id.sendButtonChatActivity)
+    Button sendButton;
 
 
 
@@ -68,11 +95,61 @@ public class ChatActivity extends AppCompatActivity {
 
         setupRecyclerView();
 
+        setupOnClickListeners();
+
         setupFirebase();
+
+        ConversationOppositeUserID = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
+
+        getProfileOnStartup(Auth.getUid());
+        getProfileOnStartup(ConversationOppositeUserID);
 
 
         //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
-        ConversationOppositeUserID = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
+
+    }
+
+    private void setupOnClickListeners()
+    {
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendChatMessage();
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
+
+    private void getProfileOnStartup(String Uid)
+    {
+        DocumentReference docRef = firestore.collection(FIREBASE_Profiles_PATH).document(Uid);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    DocumentSnapshot documentSnapshot = task.getResult();
+                    if(documentSnapshot.exists())
+                    {
+                        Profile profile = documentSnapshot.toObject(Profile.class);
+
+                        if(profile.getUserId().equals(Auth.getUid()))
+                        {
+                            myProfile = profile;
+                        }
+                        else{
+                            matchProfile = profile;
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -83,6 +160,12 @@ public class ChatActivity extends AppCompatActivity {
         Log.d("compared", compareUsers());
         searchConversationDocumentRef(ConversationOppositeUserID);
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        registration.remove();
     }
 
     private void setupFirebase()
@@ -118,11 +201,13 @@ public class ChatActivity extends AppCompatActivity {
 
     public void getConversation(String ref)
     {
-        firestore.collection(CONVERSATION_REFERENCE).document(ref).collection(CONVERSATION_CHAT_COLLECTION).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        firestore.collection(CONVERSATION_REFERENCE).document(ref).collection(CONVERSATION_CHAT_COLLECTION).orderBy("timeStamp").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 chatMessages = task.getResult().toObjects(ChatMessage.class);
                 adapter.setChatMessages(chatMessages);
+                //When conversation go to button
+                recyclerView.scrollToPosition(adapter.getItemCount() - 1);
             }
         });
     }
@@ -160,7 +245,12 @@ public class ChatActivity extends AppCompatActivity {
 
                             String ref = doc.getId();
 
+                            //Set ref to Collection, used when sending to others.
+                            referenceToListCollection = ref;
+
                             getUserConversation(ref);
+
+                            setupConversationSnapshotListener();
                         }
                     }
                 });
@@ -168,20 +258,30 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupConversationSnapshotListener()
     {
-        conversationRef.addSnapshotListener((documentSnapshot, e) -> {
-            if(e != null)
-            {
-                Log.d("Error", e.getLocalizedMessage());
-            }
-
-            if(documentSnapshot != null && documentSnapshot.exists())
-            {
-                ChatMessage newChaMessage = (ChatMessage) documentSnapshot.getData();
-                adapter.setChatMessages(newChaMessage);
+        CollectionReference documentReference = firestore.collection(CONVERSATION_REFERENCE).document(referenceToListCollection).collection(CONVERSATION_CHAT_COLLECTION);
+        registration = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    getConversation(referenceToListCollection);
             }
         });
 
+
     }
+
+    private void sendChatMessage()
+    {
+        String message = editTextChatAcitivty.getText().toString();
+        //Check to see message
+        if(message.isEmpty())
+            return;
+
+        ChatMessage chatMessage = new ChatMessage(message, myProfile.getFirstName(), new Date());
+
+        firestore.collection(CONVERSATION_REFERENCE).document(referenceToListCollection).collection(CONVERSATION_CHAT_COLLECTION).add(chatMessage);
+
+    }
+
 
     private void setupRecyclerView(){
         recyclerView.setHasFixedSize(true);

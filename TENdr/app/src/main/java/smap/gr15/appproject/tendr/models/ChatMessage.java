@@ -8,6 +8,16 @@ public class ChatMessage {
     private String sender;
     private Date timeStamp;
 
+    public ChatMessage(){
+
+    }
+
+    public ChatMessage(String message, String sender, Date timeStamp) {
+        this.message = message;
+        this.sender = sender;
+        this.timeStamp = timeStamp;
+    }
+
     public String getSender() {
         return sender;
     }
