@@ -122,21 +122,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 chatMessages = task.getResult().toObjects(ChatMessage.class);
-
-                Log.d("sizeofmessages", String.valueOf(chatMessages.size()));
-
-                for (ChatMessage chat : chatMessages)
-                {
-
-                    Log.d("chatmessages", chat.getMessage());
-                }
-
                 adapter.setChatMessages(chatMessages);
-
-                adapter.notifyDataSetChanged();
-
-                Log.d("itemcount", String.valueOf(adapter.getItemCount()));
-
             }
         });
     }
@@ -191,8 +177,7 @@ public class ChatActivity extends AppCompatActivity {
             if(documentSnapshot != null && documentSnapshot.exists())
             {
                 ChatMessage newChaMessage = (ChatMessage) documentSnapshot.getData();
-                conversation.addChatMessage(newChaMessage);
-                adapter.notifyDataSetChanged();
+                adapter.setChatMessages(newChaMessage);
             }
         });
 
