@@ -15,6 +15,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
@@ -25,20 +26,15 @@ import smap.gr15.appproject.tendr.models.Profile;
 
 public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.ViewHolder> {
 
-
-
-    private List<Chat> chatList;
+    private List<ChatMessage> chatMessages;
+    private Conversation conversation;
     private Context context;
 
-    public ChatMessageAdapter(Context context, List<Chat> chatList)
-    {
-        this.chatList = chatList;
+    public ChatMessageAdapter(Context context, Conversation conversation) {
+        this.chatMessages = conversation.getChatMessages();
+        this.conversation = conversation;
         this.context = context;
     }
-
-
-
-
 
     @NonNull
     @Override
@@ -50,43 +46,29 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ChatMessageAdapter.ViewHolder holder, int position) {
-        Chat chatItem = chatList.get(position);
+        ChatMessage chatMessage = chatMessages.get(position);
 
-        //holder.
-        /*holder.textViewName.setText(messages.get(position).getProfile().getFirstName());
-        holder.textViewMessage.setText(messages.get(position).getMessage());
-        Picasso.with(context)
-                .load(messages.get(position).getProfile().getPictures().get(0))
-                .placeholder(android.R.drawable.sym_def_app_icon)
-                .error(android.R.drawable.sym_def_app_icon)
-                .into(holder.imageView);
+        holder.textViewMessage.setText(chatMessage.getMessage());
+        holder.textViewName.setText(chatMessage.getSender());
+        holder.textViewTimeStamp.setText(chatMessage.getTimeStamp().toString());
 
-         */
 
     }
 
     @Override
     public int getItemCount() {
-        return chatList.size();
+        return chatMessages.size();
     }
 
-    public String getImagesUriFromFirebase(String Uri)
-    {
-        //Maybe we need this
-
-        return Uri;
-    }
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private ImageView imageView;
         private TextView textViewName, textViewMessage, textViewTimeStamp;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imageView = itemView.findViewById(R.id.imageView_RecyclerView_chat);
             textViewName = itemView.findViewById(R.id.textView_RecyclerView_chat_Name);
             textViewMessage = itemView.findViewById(R.id.textView_RecyclerView_chat_Message);
             textViewTimeStamp = itemView.findViewById(R.id.textView_RecyclerView_chat_timeStamp);
