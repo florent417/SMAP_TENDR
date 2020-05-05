@@ -42,28 +42,18 @@ public class ChatActivity extends AppCompatActivity {
 
     private static String firstUser = "firstUserId";
     private static String secondUser = "secondUserId";
+    private static String comparedUser = "combinedUserUid";
     private static String CONVERSATION_REFERENCE = "conversations";
+    private static String CONVERSATION_CHAT_COLLECTION = "chatMessages";
     private FirebaseAuth Auth;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageReference = storage.getReferenceFromUrl("gs://tendr-app-project.appspot.com/pictures").child("date-russian-girl-site-review.png");
-    public RecyclerView.Adapter chatMessageAdapter;
+    public ChatMessageAdapter adapter;
     private static String ConversationOppositeUserID;
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     DocumentReference conversationRef;
-
+    List<ChatMessage> chatMessages = new ArrayList<>();
     Conversation conversation = new Conversation();
-
-    @BindView(R.id.activity_auth_toolbar)
-    Toolbar _toolbar;
-
-    @BindView(R.id.imageButton_settings)
-    ImageButton imageButton_settings;
-
-    @BindView(R.id.imageButton_main)
-    ImageButton imageButton_main;
-
-    @BindView(R.id.imageButton_profile)
-    ImageButton imageButton_profile;
 
     @BindView(R.id.RecyclerView_chatActivity)
     RecyclerView recyclerView;
@@ -76,42 +66,103 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         ButterKnife.bind(this);
 
-        setSupportActionBar(_toolbar);
-        helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
-
         setupRecyclerView();
 
-        ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
+        setupFirebase();
+
+
+        //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
+        ConversationOppositeUserID = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
+        Log.d("USERUID", Auth.getUid());
+        Log.d("compared", compareUsers());
         searchConversationDocumentRef(ConversationOppositeUserID);
 
     }
 
+    private void setupFirebase()
+    {
+        Auth = FirebaseAuth.getInstance();
+    }
+
     private void getUserConversation(String ref)
     {
-        conversationRef = firestore.collection(CONVERSATION_REFERENCE).document(ref);
+        DocumentReference docRef = firestore.collection(CONVERSATION_REFERENCE).document(ref);
+
+
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    conversation = task.getResult().toObject(Conversation.class);
+
+                    //Now Get Chat List
+                    getConversation(ref);
+
+
+                }
+            }
+        });
+
+        //Log.d("confRefss", conversationRef);
 
         // Event for when receiving new chat messages
-        setupConversationSnapshotListener();
+        //setupConversationSnapshotListener();
+    }
+
+    public void getConversation(String ref)
+    {
+        firestore.collection(CONVERSATION_REFERENCE).document(ref).collection(CONVERSATION_CHAT_COLLECTION).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                chatMessages = task.getResult().toObjects(ChatMessage.class);
+
+                Log.d("sizeofmessages", String.valueOf(chatMessages.size()));
+
+                for (ChatMessage chat : chatMessages)
+                {
+
+                    Log.d("chatmessages", chat.getMessage());
+                }
+
+                adapter.setChatMessages(chatMessages);
+
+                adapter.notifyDataSetChanged();
+
+                Log.d("itemcount", String.valueOf(adapter.getItemCount()));
+
+            }
+        });
+    }
+
+    private String compareUsers()
+    {
+        int sizeOfUser = Auth.getUid().compareTo(ConversationOppositeUserID);
+
+        if(sizeOfUser > 0)
+        {
+            conversation.setCombinedUserUid(Auth.getUid() + ConversationOppositeUserID);
+        }
+        else
+        {
+            conversation.setCombinedUserUid(ConversationOppositeUserID + Auth.getUid());
+        }
+
+        return conversation.getCombinedUserUid();
     }
 
     //This method should return key to the current conversation the user has clicked
     private void searchConversationDocumentRef(String conversationOppositeUserID)
     {
-
         CollectionReference findConversation = firestore.collection(CONVERSATION_REFERENCE);
         Query query = findConversation
-                .whereEqualTo(firstUser, conversationOppositeUserID)
-                .whereEqualTo(firstUser, Auth.getUid())
-                .whereEqualTo(secondUser, conversationOppositeUserID)
-                .whereEqualTo(secondUser, Auth.getUid());
+                .whereEqualTo(comparedUser, compareUsers());
 
         query.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -121,7 +172,7 @@ public class ChatActivity extends AppCompatActivity {
                         {
                             DocumentSnapshot doc = task.getResult().getDocuments().get(0);
 
-                            String ref = doc.getReference().toString();
+                            String ref = doc.getId();
 
                             getUserConversation(ref);
                         }
@@ -141,17 +192,17 @@ public class ChatActivity extends AppCompatActivity {
             {
                 ChatMessage newChaMessage = (ChatMessage) documentSnapshot.getData();
                 conversation.addChatMessage(newChaMessage);
-                chatMessageAdapter.notifyDataSetChanged();
+                adapter.notifyDataSetChanged();
             }
         });
 
     }
 
     private void setupRecyclerView(){
-        chatMessageAdapter = new ChatMessageAdapter(this, conversation);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(chatMessageAdapter);
+        adapter = new ChatMessageAdapter(this, chatMessages);
+        recyclerView.setAdapter(adapter);
     }
 
 

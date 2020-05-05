@@ -1,5 +1,7 @@
 package smap.gr15.appproject.tendr.models;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,6 +43,15 @@ public class Conversation {
         this.chatMessages.add(chatMessage);
     }
 
+    public String getCombinedUserUid() {
+        return combinedUserUid;
+    }
+
+    public void setCombinedUserUid(String combinedUserUid) {
+        this.combinedUserUid = combinedUserUid;
+    }
+
+    private String combinedUserUid;
 
 
 
