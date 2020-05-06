@@ -97,4 +97,8 @@ public class MainActivity extends AppCompatActivity {
             matchServiceBound = true;
         }
     }
+
+    public interface ConnectedToServices{
+        void onConnectedToMatchService(MatchService matchService);
+    }
 }

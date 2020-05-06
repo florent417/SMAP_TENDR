@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.activities.MainActivity;
 import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
@@ -37,19 +38,15 @@ import smap.gr15.appproject.tendr.utils.Globals;
  * Use the {@link MatchesFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MatchesFragment extends Fragment {
+public class MatchesFragment extends Fragment implements MainActivity.ConnectedToServices {
     private static final String TAG = "MatchesFragment";
-    private int MATCH_LIMIT = 10;
-    private final String PROFILES_DB = "profiles";
-    private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private ProfileList wantedMatches;
-    private ProfileList unwantedMatches;
-    private List<Profile> successfulMatches = new ArrayList<Profile>();
-    private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String testUID1 = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
     private String testUID2 = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
     private String ref = "jN9BhcJ4LZpnoDzXNVsJ";
+    // Ref: https://stackoverflow.com/questions/56659321/what-does-uf8ff-mean-in-java
+    private String JAVA_UNICODE_ESCAPE_CHAR = "\uf8ff";
+    private MatchService matchService = null;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -60,7 +57,6 @@ public class MatchesFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private MatchService matchService;
 
     public MatchesFragment() {
         // Required empty public constructor
@@ -108,14 +104,8 @@ public class MatchesFragment extends Fragment {
     private void getConversations(){
         CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
         Query getConvosQuery = findMatches
-                .whereGreaterThanOrEqualTo("combinedUserUid", testUID1)
-                .whereLessThanOrEqualTo("combinedUserUid", testUID1);
-                //.whereEqualTo("secondUserId", "hejmeddig");
-
-        /*
-        .whereGreaterThanOrEqualTo("combinedUserUid", testUID1)
-                .whereLessThanOrEqualTo("combinedUserUid", testUID1);
-         */
+                .whereGreaterThanOrEqualTo("combinedUserUid", testUID2)
+                .whereLessThanOrEqualTo("combinedUserUid", testUID2 + JAVA_UNICODE_ESCAPE_CHAR);
 
         getConvosQuery.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -128,29 +118,9 @@ public class MatchesFragment extends Fragment {
                 });
     }
 
-    /*
-    private void fetchConversations(List) {
-        db.collection(PROFILES_DB)
-                .whereIn("email", matchIds)
-                .limit(MATCH_LIMIT)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            successfulMatches = new ArrayList<Profile>();
-                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                Log.d(LOG, document.getId() + " => " + document.getData());
-                                Profile matchedProfile = document.toObject(Profile.class);
-                                successfulMatches.add(matchedProfile);
-                            }
-                        } else {
-                            Log.d(LOG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+    @Override
+    public void onConnectedToMatchService(MatchService matchService) {
+        this.matchService = matchService;
 
     }
-
-     */
 }
