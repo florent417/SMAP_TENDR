@@ -280,6 +280,11 @@ public class SettingsActivity extends AppCompatActivity {
             OccupationOccupation.requestFocus();
             return;
         }
+        if(genderPrefences.equals(profile.getGenderPreference()) && Location.equals(profile.getCountry()) && City.equals(profile.getCity()) && Occupation.equals(profile.getOccupation()))
+        {
+            Toast.makeText(profileService, "You haven't made any changes", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         profile.setCountry(Location);
         profile.setCity(City);
