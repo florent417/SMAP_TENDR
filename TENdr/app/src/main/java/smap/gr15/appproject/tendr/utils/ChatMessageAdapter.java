@@ -79,12 +79,12 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
         if(myProfile.getFirstName().equals(sender))
         {
-            String picture = myProfile.getPictures() == null || myProfile.getPictures().isEmpty() || myProfile.getPictures().get(0).equals("") ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": myProfile.getPictures().get(0);
+            String picture = myProfile.getPictures() == null ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": myProfile.getPictures().get(0);
 
             Picasso.get().load(picture).into(imageView);
         }
         else{
-            String picture =  myProfile.getPictures() == null || matchProfile.getPictures().isEmpty() || matchProfile.getPictures().get(0).equals("") ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
+            String picture =  matchProfile.getPictures() == null ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
 
             Picasso.get().load(picture).into(imageView);
         }

@@ -106,7 +106,7 @@ public class ChatActivity extends AppCompatActivity {
 
         setupFirebase();
 
-        ConversationOppositeUserID = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
+        ConversationOppositeUserID = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
 
         getProfileOnStartup(Auth.getUid());
         getProfileOnStartup(ConversationOppositeUserID);
@@ -189,7 +189,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setMatchProfilePicture(ImageView imageView)
     {
-        String picture = matchProfile.getPictures() == null || matchProfile.getPictures().isEmpty() || matchProfile.getPictures().get(0).equals("") ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": matchProfile.getPictures().get(0);
+        String picture = matchProfile.getPictures() == null ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
 
         Picasso.get().load(picture).into(imageView);
     }
