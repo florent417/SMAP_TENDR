@@ -4,14 +4,23 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Profile;
 
 public class SwipeCardFragment extends Fragment {
+    private Profile profile;
+
+    public SwipeCardFragment(Profile profile) {
+        this.profile = profile;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -20,11 +29,23 @@ public class SwipeCardFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        //ImageView imageView = (ImageView) getView().findViewById(R.id.foo);
+        //ImageView imageView = (ImageView) getView().findViewById(R.id.);
         // or  (ImageView) view.findViewById(R.id.foo);
- /*       viewPager = getView().findViewById(R.id.main_swipe_card);
+        TextView nameAndAge = getView().findViewById(R.id.textView_main_swipe_name_age);
+        TextView bio = getView().findViewById(R.id.textView_main_swipe_bio);
+
+        nameAndAge.setText(mergeNameAndAge(profile.getFirstName(), profile.getAge()));
+
+
+
+
+        /*       viewPager = getView().findViewById(R.id.main_swipe_card);
         swipeAdapter = new SwipeFragment.SwipePagerAdapter(this);
         viewPager.setAdapter(swipeAdapter);*/
+    }
+
+    private String mergeNameAndAge(String name, int age) {
+        return name + ": " + age;
     }
 
 

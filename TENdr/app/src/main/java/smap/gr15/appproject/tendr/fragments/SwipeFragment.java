@@ -17,10 +17,11 @@ import java.util.LinkedList;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.services.MatchService;
+import smap.gr15.appproject.tendr.utils.SwipePagerAdapter;
 
 public class SwipeFragment extends Fragment {
     // Implement swipe fragment using: https://developer.android.com/training/animation/screen-slide-2#viewpager
-    private static final int NUM_SWIPE_CARDS = 10;
+    private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private LinkedList<Profile> profilesToSwipe;
     private MatchService matchService;
@@ -45,7 +46,7 @@ public class SwipeFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         viewPager = getView().findViewById(R.id.main_swipe_card);
-        swipeAdapter = new SwipePagerAdapter(this);
+        swipeAdapter = new SwipePagerAdapter(this, profilesToSwipe);
         viewPager.setAdapter(swipeAdapter);
     }
 
@@ -72,24 +73,6 @@ public class SwipeFragment extends Fragment {
                     fetchSwipeableProfiles();
                 }
             }, FETCH_PROFILE_WAIT_TIME_MS);
-        }
-    }
-
-    private class SwipePagerAdapter extends FragmentStateAdapter {
-        public SwipePagerAdapter(Fragment fragment) {
-            super(fragment);
-        }
-
-        // this one needs to return the swipe cards with their filled data. Use the position to pass
-        // a profile from at list i guess.
-        @Override
-        public Fragment createFragment(int position) {
-            return new SwipeCardFragment();
-        }
-
-        @Override
-        public int getItemCount() {
-            return NUM_SWIPE_CARDS;
         }
     }
 }
