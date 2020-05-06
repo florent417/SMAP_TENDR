@@ -11,10 +11,8 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.ChatActivity"/>
         <activity android:name=".activities.MatchesActivity" />
-        <activity android:name=".activities.ProfileActivity" />
-        <activity android:name=".activities.SettingsActivity" >
-
-        </activity>
+        <activity android:name=".activities.ProfileActivity"/>
+        <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.AuthenticationActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,9 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity">
-
-        </activity>
+        <activity android:name=".activities.MainActivity"/>
         <service android:name=".services.MatchService" />
         <service android:name=".services.ProfileService" />
     </application>
