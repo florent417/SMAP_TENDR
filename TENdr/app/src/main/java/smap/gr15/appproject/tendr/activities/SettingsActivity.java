@@ -14,8 +14,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,6 +30,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,6 +40,8 @@ import smap.gr15.appproject.tendr.services.ProfileService;
 import smap.gr15.appproject.tendr.utils.Globals;
 import smap.gr15.appproject.tendr.utils.helpers;
 
+import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
+
 public class SettingsActivity extends AppCompatActivity {
 
     private ServiceConnection profileServiceConnection;
@@ -42,6 +49,9 @@ public class SettingsActivity extends AppCompatActivity {
     private boolean profileServiceBound;
     private static final String TAG = "ProfileActivity";
     private FirebaseAuth Auth;
+    private static String TAG_ERROR_NO_PREFERENCES = "You must select at least one gender preference";
+    private static String TAG_GENEREAL_ERROR = "Error!";
+    private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -61,6 +71,18 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.ShowMeMale)
     CheckedTextView checkedTextViewMale;
 
+    @BindView(R.id.LocationCountryOfResidence)
+    EditText LocationCountryOfResidence;
+
+    @BindView(R.id.CityCityOfResidence)
+    EditText CityCityOfResidence;
+
+    @BindView(R.id.OccupationOccupation)
+    EditText OccupationOccupation;
+
+    @BindView(R.id.applyButtonSettings)
+    Button applyButtonSettings;
+
     public static Profile profile = new Profile();
 
     @Override
@@ -69,6 +91,8 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
         setSupportActionBar(_toolbar);
+
+        setupOnClickListeners();
 
         setupFirebase();
 
@@ -84,6 +108,32 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+    }
+
+    private void setupOnClickListeners()
+    {
+        applyButtonSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyChangesProfile();
+            }
+        });
+
+        checkedTextViewFemale.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkedTextViewFemale.setChecked(!checkedTextViewFemale.isChecked());
+                checkedTextViewFemale.setError(null);
+            }
+        });
+
+        checkedTextViewMale.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkedTextViewMale.setChecked(!checkedTextViewMale.isChecked());
+                checkedTextViewFemale.setError(null);
+            }
+        });
     }
 
     @Override
@@ -127,6 +177,7 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onGetProfileSuccess(Profile userProfile) {
             profile = userProfile;
+            setupUserSpecificUI();
         }
 
         @Override
@@ -149,6 +200,83 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setupUserSpecificUI()
     {
+        Log.d("profilesize", String.valueOf(profile.getGenderPreference().size()));
+        //Gender preferences
+        for (String s : profile.getGenderPreference())
+        {
+            if(s.equals("Female"))
+            {
+                Log.d("here1", "here");
+                checkedTextViewFemale.setChecked(true);
+            }
+            if(s.equals("Male"))
+            {
+                Log.d("here2", "here");
+                checkedTextViewMale.setChecked(true);
+            }
+        }
+
+        //Location
+        LocationCountryOfResidence.setText(profile.getCountry());
+
+        //City
+        CityCityOfResidence.setText(profile.getCity());
+
+        //OccupationOccupation
+        OccupationOccupation.setText(profile.getOccupation());
+
+    }
+
+    private void applyChangesProfile()
+    {
+        final String Location = LocationCountryOfResidence.getText().toString().trim();
+        final String City = CityCityOfResidence.getText().toString().trim();
+        final String Occupation = OccupationOccupation.getText().toString().trim();
+        ArrayList<String> genderPrefences = new ArrayList<>();
+        if(checkedTextViewMale.isChecked())
+        {
+            genderPrefences.add("Male");
+        }
+        if(checkedTextViewFemale.isChecked())
+        {
+            genderPrefences.add("Female");
+        }
+        if(genderPrefences.isEmpty())
+        {
+            checkedTextViewFemale.setError(TAG_ERROR_NO_PREFERENCES);
+            return;
+        }
+        if(Location.isEmpty())
+        {
+            LocationCountryOfResidence.setError(TAG_GENEREAL_ERROR);
+            return;
+        }
+        if(City.isEmpty())
+        {
+            CityCityOfResidence.setError(TAG_GENEREAL_ERROR);
+            return;
+        }
+        if(Occupation.isEmpty())
+        {
+            OccupationOccupation.setError(TAG_GENEREAL_ERROR);
+            return;
+        }
+
+        profile.setCountry(Location);
+        profile.setCity(City);
+        profile.setOccupation(Occupation);
+        profile.setGenderPreference(genderPrefences);
+
+
+        firestore.collection(FIREBASE_Profiles_PATH).document(Auth.getUid()).set(profile).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful())
+                {
+                    Toast.makeText(profileService, "Profile Updated Successfully", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
     }
 
