@@ -1,6 +1,7 @@
 package smap.gr15.appproject.tendr.utils;
 
 import android.content.Context;
+import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.activities.ChatActivity;
 import smap.gr15.appproject.tendr.models.Chat;
 import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.Conversation;
@@ -30,6 +32,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     private List<ChatMessage> chatMessages;
     private Context context;
+    private Profile myProfile = new Profile();
+    private Profile matchProfile = new Profile();
 
     public void setChatMessages(List<ChatMessage> chatMessages) {
         this.chatMessages = chatMessages;
@@ -62,7 +66,31 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         holder.textViewName.setText(chatMessage.getSender());
         holder.textViewTimeStamp.setText(chatMessage.getTimeStamp().toString());
 
+        loadProfilesAndSetPic(holder.image, chatMessage.getSender());
+
     }
+
+    private void loadProfilesAndSetPic(ImageView imageView, String sender)
+    {
+
+        this.myProfile = ChatActivity.getMyProfile();
+        this.matchProfile = ChatActivity.getMatchProfile();
+
+
+        if(myProfile.getFirstName().equals(sender))
+        {
+            String picture = myProfile.getPictures() == null || myProfile.getPictures().isEmpty() || myProfile.getPictures().get(0).equals("") ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": myProfile.getPictures().get(0);
+
+            Picasso.get().load(picture).into(imageView);
+        }
+        else{
+            String picture =  myProfile.getPictures() == null || matchProfile.getPictures().isEmpty() || matchProfile.getPictures().get(0).equals("") ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
+
+            Picasso.get().load(picture).into(imageView);
+        }
+    }
+
+
 
     @Override
     public int getItemCount() {
@@ -74,11 +102,13 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private LinearLayout linearLayout;
+        private ImageView image;
         private TextView textViewName, textViewMessage, textViewTimeStamp;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
+            image = itemView.findViewById(R.id.textView_RecyclerView_chat_image);
             textViewName = itemView.findViewById(R.id.textView_RecyclerView_chat_Name);
             textViewMessage = itemView.findViewById(R.id.textView_RecyclerView_chat_Message);
             textViewTimeStamp = itemView.findViewById(R.id.textView_RecyclerView_chat_timeStamp);

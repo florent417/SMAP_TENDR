@@ -7,9 +7,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -31,6 +34,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firestore.v1.Document;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,8 +67,8 @@ public class ChatActivity extends AppCompatActivity {
     private static String ConversationOppositeUserID;
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private String referenceToListCollection;
-    private Profile myProfile;
-    private Profile matchProfile;
+    private static Profile myProfile;
+    private static Profile matchProfile;
     DocumentReference conversationRef;
     List<ChatMessage> chatMessages = new ArrayList<>();
     Conversation conversation = new Conversation();
@@ -78,6 +82,9 @@ public class ChatActivity extends AppCompatActivity {
 
     @BindView(R.id.textViewName_chatActivity)
     TextView matchName;
+
+    @BindView(R.id.imageViewPicture_chatActivity)
+    ImageView imageViewMatch;
 
     @BindView(R.id.editTextChatAcitivty)
     EditText editTextChatAcitivty;
@@ -99,7 +106,7 @@ public class ChatActivity extends AppCompatActivity {
 
         setupFirebase();
 
-        ConversationOppositeUserID = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
+        ConversationOppositeUserID = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
 
         getProfileOnStartup(Auth.getUid());
         getProfileOnStartup(ConversationOppositeUserID);
@@ -139,6 +146,17 @@ public class ChatActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        sendButton.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if(keyCode == KeyEvent.KEYCODE_ENTER)
+                {
+                    closeKeyboard();
+                }
+                return false;
+            }
+        });
     }
 
     private void getProfileOnStartup(String Uid)
@@ -160,11 +178,20 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         else{
                             matchProfile = profile;
+                            matchName.setText(matchProfile.getFirstName());
+                            setMatchProfilePicture(imageViewMatch);
                         }
                     }
                 }
             }
         });
+    }
+
+    private void setMatchProfilePicture(ImageView imageView)
+    {
+        String picture = matchProfile.getPictures() == null || matchProfile.getPictures().isEmpty() || matchProfile.getPictures().get(0).equals("") ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": matchProfile.getPictures().get(0);
+
+        Picasso.get().load(picture).into(imageView);
     }
 
 
@@ -280,6 +307,20 @@ public class ChatActivity extends AppCompatActivity {
 
         firestore.collection(CONVERSATION_REFERENCE).document(referenceToListCollection).collection(CONVERSATION_CHAT_COLLECTION).add(chatMessage);
 
+        closeKeyboard();
+
+    }
+
+    //This is taken from this youtube video: https://www.youtube.com/watch?v=CW5Xekqfx3I
+    private void closeKeyboard(){
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        editTextChatAcitivty.setText("");
+        editTextChatAcitivty.clearFocus();
     }
 
 
@@ -310,6 +351,14 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public static Profile getMyProfile(){
+        return myProfile;
+    }
+
+    public static Profile getMatchProfile(){
+        return matchProfile;
     }
 
 
