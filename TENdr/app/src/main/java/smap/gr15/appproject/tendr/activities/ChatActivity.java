@@ -109,6 +109,21 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        searchConversationDocumentRef(ConversationOppositeUserID);
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        registration.remove();
+    }
+
     private void setupOnClickListeners()
     {
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -152,21 +167,6 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        Log.d("USERUID", Auth.getUid());
-        Log.d("compared", compareUsers());
-        searchConversationDocumentRef(ConversationOppositeUserID);
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        registration.remove();
-    }
 
     private void setupFirebase()
     {
