@@ -14,6 +14,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.CheckedTextView;
 import android.widget.ImageButton;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -54,6 +55,12 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
 
+    @BindView(R.id.ShowMeFemale)
+    CheckedTextView checkedTextViewFemale;
+
+    @BindView(R.id.ShowMeMale)
+    CheckedTextView checkedTextViewMale;
+
     public static Profile profile = new Profile();
 
     @Override
@@ -77,6 +84,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+    }
+
+    @Override
+    protected void onStop() {
+        profileService = null;
+        unbindService(profileServiceConnection);
+        profileServiceBound = false;
+        super.onStop();
     }
 
     private void setupProfileServiceConnection(){
@@ -112,7 +127,6 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onGetProfileSuccess(Profile userProfile) {
             profile = userProfile;
-            Log.d("myProfile", profile.getFirstName());
         }
 
         @Override
@@ -133,7 +147,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void setupUI()
+    private void setupUserSpecificUI()
     {
 
     }
