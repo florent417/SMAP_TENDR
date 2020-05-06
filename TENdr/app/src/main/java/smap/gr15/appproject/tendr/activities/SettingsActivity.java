@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -52,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static String TAG_ERROR_NO_PREFERENCES = "You must select at least one gender preference";
     private static String TAG_GENEREAL_ERROR = "Error!";
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private MediaPlayer mediaPlayer;
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -98,6 +100,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         setupProfileServiceConnection();
 
+        setupMediaPlayerForFunnySong();
+
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
 
     }
@@ -108,6 +112,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+    }
+
+    private void setupMediaPlayerForFunnySong()
+    {
+        mediaPlayer = MediaPlayer.create(this, R.raw.congratulations);
     }
 
     private void setupOnClickListeners()
@@ -142,6 +151,13 @@ public class SettingsActivity extends AppCompatActivity {
         unbindService(profileServiceConnection);
         profileServiceBound = false;
         super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mediaPlayer.stop();
+        mediaPlayer.release();
     }
 
     private void setupProfileServiceConnection(){
@@ -249,16 +265,19 @@ public class SettingsActivity extends AppCompatActivity {
         if(Location.isEmpty())
         {
             LocationCountryOfResidence.setError(TAG_GENEREAL_ERROR);
+            LocationCountryOfResidence.requestFocus();
             return;
         }
         if(City.isEmpty())
         {
             CityCityOfResidence.setError(TAG_GENEREAL_ERROR);
+            CityCityOfResidence.requestFocus();
             return;
         }
         if(Occupation.isEmpty())
         {
             OccupationOccupation.setError(TAG_GENEREAL_ERROR);
+            OccupationOccupation.requestFocus();
             return;
         }
 
@@ -274,6 +293,7 @@ public class SettingsActivity extends AppCompatActivity {
                 if(task.isSuccessful())
                 {
                     Toast.makeText(profileService, "Profile Updated Successfully", Toast.LENGTH_LONG).show();
+                    mediaPlayer.start();
                 }
             }
         });
