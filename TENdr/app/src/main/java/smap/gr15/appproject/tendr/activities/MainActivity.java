@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Ref: https://stackoverflow.com/questions/37044203/bound-service-with-activity-with-fragment
     public interface ConnectedToServices{
         void onConnectedToMatchService(MatchService matchService);
     }

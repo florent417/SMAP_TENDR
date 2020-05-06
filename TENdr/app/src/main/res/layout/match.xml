@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:id="@+id/imageView_match"
+        android:id="@+id/ProfileImage_ImageView_match"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -17,16 +17,16 @@
         app:srcCompat="@android:drawable/sym_def_app_icon" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/Name_TextView_match"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="@+id/imageView_match"
-        app:layout_constraintStart_toStartOf="@+id/imageView_match"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_match" />
+        app:layout_constraintEnd_toEndOf="@+id/ProfileImage_ImageView_match"
+        app:layout_constraintStart_toStartOf="@+id/ProfileImage_ImageView_match"
+        app:layout_constraintTop_toBottomOf="@+id/ProfileImage_ImageView_match" />
 
     <EditText
-        android:id="@+id/lastMsg_match"
+        android:id="@+id/LastMsg_EditText_match"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -34,7 +34,7 @@
         android:ems="10"
         android:gravity="start|top"
         android:inputType="textMultiLine"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView_match"
+        app:layout_constraintBottom_toBottomOf="@+id/ProfileImage_ImageView_match"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageView_match" />
+        app:layout_constraintTop_toTopOf="@+id/ProfileImage_ImageView_match" />
 </androidx.constraintlayout.widget.ConstraintLayout>

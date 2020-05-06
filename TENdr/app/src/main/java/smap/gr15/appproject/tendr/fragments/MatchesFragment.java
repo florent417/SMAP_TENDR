@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +28,8 @@ import java.util.Objects;
 
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.activities.MainActivity;
+import smap.gr15.appproject.tendr.adapters.MatchAdapter;
+import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
@@ -47,6 +51,11 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
     // Ref: https://stackoverflow.com/questions/56659321/what-does-uf8ff-mean-in-java
     private String JAVA_UNICODE_ESCAPE_CHAR = "\uf8ff";
     private MatchService matchService = null;
+    // RecyclerView
+    private RecyclerView recyclerView;
+    private MatchAdapter matchAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+    List<Conversation> convos = new ArrayList<>();
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -111,16 +120,62 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        List<Conversation> convos = new ArrayList<>();
                         convos = task.getResult().toObjects(Conversation.class);
+                        List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                        for (int i = 0; i < convos.size(); i++){
+                            Conversation tempConvo = convos.get(i);
+                            String docRef = documentSnapshots.get(i).getId();
+                            getMessages(i, docRef);
+                        }
+                        /*
+                        for(DocumentSnapshot documentSnapshot : task.getResult()){
+
+                            Conversation tempConvo = documentSnapshot.toObject(Conversation.class);
+                            Conversation tempConvo2 = convos.get(0);
+                            Log.d(TAG, "Convos index: " + convos.indexOf(tempConvo));
+                            Log.d(TAG, "Convo somehting1: " + tempConvo.getCombinedUserUid());
+                            Log.d(TAG, "Convo somehting2: " + convos.get(0).getCombinedUserUid());
+                            String docRef = documentSnapshot.getId();
+                            getMessages(tempConvo, docRef);
+                        }
+
+                         */
+
+                    }
+                });
+    }
+
+    private void getMessages(int convoIndex, String conversationDocRef){
+        db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document(conversationDocRef).collection(Globals.FIREBASE_CHAT_MSG_PATH)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        Log.d(TAG, "Inside get chats");
+                        List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
+                        Conversation conversation = convos.get(convoIndex);
+                        conversation.setChatMessages(chatMessages);
+                        convos.set(convoIndex, conversation);
+                        setupRecyclerView(convos);
+                        //Log.d(TAG, "Got convo: " + convos.get(0).getCombinedUserUid());
                         Log.d(TAG, Integer.toString(convos.size()));
                     }
                 });
     }
 
+    private void setupRecyclerView(List<Conversation> conversations){
+        recyclerView = getView().findViewById(R.id.RecyclerView_Matches_OverView);
+        // Maybe another context
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        matchAdapter = new MatchAdapter(this, conversations);
+        recyclerView.setAdapter(matchAdapter);
+        matchAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onConnectedToMatchService(MatchService matchService) {
         this.matchService = matchService;
-
+        getConversations();
     }
 }

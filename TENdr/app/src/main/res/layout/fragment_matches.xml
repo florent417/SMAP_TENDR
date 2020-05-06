@@ -9,6 +9,7 @@
     tools:context=".fragments.MatchesFragment">
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/RecyclerView_Matches_OverView"
         android:layout_width="409dp"
         android:layout_height="673dp"
         app:layout_constraintBottom_toBottomOf="parent"
