@@ -146,6 +146,13 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        setupProfileServiceConnection();
+        setupMediaPlayerForFunnySong();
+    }
+
+    @Override
     protected void onStop() {
         profileService = null;
         unbindService(profileServiceConnection);
@@ -156,7 +163,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mediaPlayer.stop();
         mediaPlayer.release();
     }
 
@@ -282,7 +288,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
         if(genderPrefences.equals(profile.getGenderPreference()) && Location.equals(profile.getCountry()) && City.equals(profile.getCity()) && Occupation.equals(profile.getOccupation()))
         {
-            Toast.makeText(profileService, "You haven't made any changes", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "You haven't made any changes", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -297,7 +303,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful())
                 {
-                    Toast.makeText(profileService, "Profile Updated Successfully", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Profile Updated Successfully", Toast.LENGTH_LONG).show();
                     mediaPlayer.start();
                 }
             }
