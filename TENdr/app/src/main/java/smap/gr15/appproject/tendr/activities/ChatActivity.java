@@ -106,13 +106,13 @@ public class ChatActivity extends AppCompatActivity {
 
         setupFirebase();
 
-        ConversationOppositeUserID = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
+        // This should be changed in production!
+        ConversationOppositeUserID = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
+        //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
 
         getProfileOnStartup(Auth.getUid());
         getProfileOnStartup(ConversationOppositeUserID);
 
-
-        //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
 
     }
 
