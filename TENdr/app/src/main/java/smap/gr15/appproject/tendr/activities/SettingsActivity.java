@@ -6,10 +6,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.ImageButton;
 
@@ -27,10 +30,17 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.services.ProfileService;
 import smap.gr15.appproject.tendr.utils.Globals;
 import smap.gr15.appproject.tendr.utils.helpers;
 
 public class SettingsActivity extends AppCompatActivity {
+
+    private ServiceConnection profileServiceConnection;
+    private ProfileService profileService;
+    private boolean profileServiceBound;
+    private static final String TAG = "ProfileActivity";
+    private FirebaseAuth Auth;
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -53,6 +63,10 @@ public class SettingsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(_toolbar);
 
+        setupFirebase();
+
+        setupProfileServiceConnection();
+
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
 
     }
@@ -63,31 +77,72 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        BuildUserProfile(currentUser.getUid());
     }
 
+    private void setupProfileServiceConnection(){
+        startService(new Intent(SettingsActivity.this, ProfileService.class));
+        setupConnectionToProfileService();
+        bindToProfileService();
+    }
 
-
-    public void BuildUserProfile(String userId)
-    {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        DocumentReference docRef = firestore.collection(Globals.FIREBASE_Profiles_PATH).document(userId);
-        Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
-
-        documentSnapshotTask.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+    private void setupConnectionToProfileService(){
+        profileServiceConnection = new ServiceConnection() {
             @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                DocumentSnapshot documentSnapshot = task.getResult();
-
-                if(documentSnapshot.exists())
-                {
-                    profile = documentSnapshot.toObject(Profile.class);
-                    Log.d("PROF", profile.getCity());
-                }
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                profileService = ((ProfileService.ProfileServiceBinder)service).getService();
+                Log.d(TAG, "profile activity connected to profile service");
+                profileServiceBound = true;
+                profileService.getUserProfile(Auth.getUid(), userProfileOperationsListener);
             }
-        });
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                profileService = null;
+                profileServiceBound = false;
+            }
+        };
     }
+
+    private void setupFirebase()
+    {
+        Auth = FirebaseAuth.getInstance();
+    }
+
+    private ProfileService.UserProfileOperationsListener userProfileOperationsListener = new ProfileService.UserProfileOperationsListener() {
+        @Override
+        public void onGetProfileSuccess(Profile userProfile) {
+            profile = userProfile;
+            Log.d("myProfile", profile.getFirstName());
+        }
+
+        @Override
+        public void onUploadPhotoSuccess(String imageUrl) {
+
+        }
+
+        @Override
+        public void onDeletePhotoSuccess(String imageUrl) {
+
+        }
+    };
+
+    private void bindToProfileService() {
+        if (!profileServiceBound) {
+            bindService(new Intent(SettingsActivity.this,
+                    ProfileService.class), profileServiceConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void setupUI()
+    {
+
+    }
+
+
+
+
+
+
+
 
 }
