@@ -85,6 +85,9 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.applyButtonSettings)
     Button applyButtonSettings;
 
+    @BindView(R.id.buttonSignOut)
+    Button buttonSignOut;
+
     public static Profile profile = new Profile();
 
     @Override
@@ -141,6 +144,16 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 checkedTextViewMale.setChecked(!checkedTextViewMale.isChecked());
                 checkedTextViewFemale.setError(null);
+            }
+        });
+
+        buttonSignOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Auth.signOut();
+                Intent intent = new Intent(getApplicationContext(), AuthenticationActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }

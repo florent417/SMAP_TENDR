@@ -23,6 +23,7 @@
         android:layout_marginRight="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/activity_auth_toolbar">
 
@@ -35,104 +36,150 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/ProfilePreference"
-                android:textStyle="bold"
                 android:textSize="25sp"
-                />
+                android:textStyle="bold" />
 
             <CheckedTextView
                 android:id="@+id/ShowMeFemale"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/female"
-                android:checked="false"
                 android:layout_gravity="center"
                 android:checkMark="?android:attr/listChoiceIndicatorMultiple"
-                android:textSize="20sp"/>
+                android:checked="false"
+                android:text="@string/female"
+                android:textSize="20sp" />
+
             <CheckedTextView
                 android:id="@+id/ShowMeMale"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:checkMark="?android:attr/listChoiceIndicatorMultiple"
                 android:checked="false"
                 android:text="@string/male"
-                android:checkMark="?android:attr/listChoiceIndicatorMultiple"
-                android:textSize="20sp"/>
+                android:textSize="20sp" />
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="10dp"/>
+                android:layout_height="10dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/location"
-                android:textStyle="bold"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
             <EditText
                 android:id="@+id/LocationCountryOfResidence"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/country_of_residence"
-                android:inputType="text"
-                 />
-
+                android:inputType="text" />
 
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="10dp"/>
+                android:layout_height="10dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/City"
-                android:textStyle="bold"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
             <EditText
                 android:id="@+id/CityCityOfResidence"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/city_of_residence"
-                android:inputType="text"
-                />
+                android:inputType="text" />
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="10dp"/>
+                android:layout_height="10dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/Occupation"
-                android:textStyle="bold"
-                android:textSize="25sp" />
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
             <EditText
                 android:id="@+id/OccupationOccupation"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/what_s_your_occupation"
-                android:inputType="text"
-                />
+                android:inputType="text" />
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="10dp"/>
+                android:layout_height="10dp" />
 
             <Button
                 android:id="@+id/applyButtonSettings"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/colorButtons"
-                android:textColor="@color/colorButtonsText"
                 android:text="@string/apply"
+                android:textColor="@color/colorButtonsText"
 
                 />
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="10dp"/>
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+
+            <Button
+                android:id="@+id/buttonSignOut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/colorButtons"
+                android:text="@string/sign_out"
+                android:textColor="@color/colorButtonsText"
+                android:layout_gravity="center"/>
 
 
         </LinearLayout>
     </ScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

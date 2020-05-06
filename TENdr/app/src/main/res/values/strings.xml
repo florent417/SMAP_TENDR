@@ -28,6 +28,7 @@
     <string name="what_s_your_occupation">What\'s your Occupation?</string>
     <string name="apply">APPLY</string>
     <string name="timestamp">timeStamp</string>
+    <string name="sign_out">Sign Out</string>
     <string-array name="Sex">
         <item>Male</item>
         <item>Female</item>
