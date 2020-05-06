@@ -15,7 +15,7 @@ public class Profile {
     private List<String> genderPreference = new ArrayList<>();
     private String email;
     private String password;
-    private List<String> pictures;
+    private List<String> pictures = new ArrayList<>();
     private List<String> matches;
     private String userId;
 
