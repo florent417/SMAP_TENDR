@@ -6,12 +6,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.MatchesFragment">
+    tools:context="smap.gr15.appproject.tendr.activities.MainActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/RecyclerView_Matches_OverView"
-        android:layout_width="409dp"
-        android:layout_height="673dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

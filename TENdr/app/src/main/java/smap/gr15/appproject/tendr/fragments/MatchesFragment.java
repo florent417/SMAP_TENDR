@@ -1,5 +1,7 @@
 package smap.gr15.appproject.tendr.fragments;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.activities.ChatActivity;
 import smap.gr15.appproject.tendr.activities.MainActivity;
 import smap.gr15.appproject.tendr.adapters.MatchAdapter;
 import smap.gr15.appproject.tendr.models.ChatMessage;
@@ -168,7 +171,7 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
         // Maybe another context
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-        matchAdapter = new MatchAdapter(this, conversations);
+        matchAdapter = new MatchAdapter(getContext(), conversations);
         recyclerView.setAdapter(matchAdapter);
         matchAdapter.notifyDataSetChanged();
     }

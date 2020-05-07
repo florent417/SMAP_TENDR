@@ -36,7 +36,7 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View matchView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_matches, parent, false);
+                .inflate(R.layout.match, parent, false);
         return new ViewHolder(matchView);
     }
 
