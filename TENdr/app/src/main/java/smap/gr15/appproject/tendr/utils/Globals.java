@@ -7,5 +7,5 @@ public class Globals {
     public final static String FIREBASE_MATCHES_PATH = "matches";
     public final static String FIREBASE_Profiles_PATH = "profiles";
     public final static String FIREBASE_STORAGE_PICTURES_PATH = "pictures";
-
+    public final static String CONVERSATION_KEY = "ConversationKey";
 }
