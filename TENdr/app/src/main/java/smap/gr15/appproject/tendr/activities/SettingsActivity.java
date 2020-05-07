@@ -161,7 +161,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setupProfileServiceConnection();
         setupMediaPlayerForFunnySong();
     }
 
