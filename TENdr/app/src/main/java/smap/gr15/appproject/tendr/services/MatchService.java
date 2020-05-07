@@ -4,11 +4,14 @@ import smap.gr15.appproject.tendr.activities.MainActivity;
 import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.ConversationNotification;
 import smap.gr15.appproject.tendr.utils.Globals;
+
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
@@ -465,11 +468,12 @@ public class MatchService extends Service {
 
                 Log.d("idd", id);
 
+
                 // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
                 // It is not pretty though :()
                 // || id.equals(ownProfile.getUserId())
                 Log.d("docc", doc.getSender());
-                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0)
+                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0 || id.equals(ownProfile.getUserId()) || isChatActivityTopActivity())
                 {
                     Log.d("reutrning", "return");
                     return;
@@ -512,6 +516,25 @@ public class MatchService extends Service {
         }
 
         return "";
+    }
+
+    //https://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android/13994622
+    private boolean isChatActivityTopActivity()
+    {
+        boolean isTop = false;
+        String chatActivity = ".activities.ChatActivity";
+
+        ActivityManager am = (ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+
+        Log.d("topactivity", cn.getShortClassName());
+
+        if(cn.getShortClassName().equals(chatActivity))
+            isTop = true;
+
+
+        return isTop;
+
     }
 
 
