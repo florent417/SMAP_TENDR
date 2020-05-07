@@ -188,6 +188,7 @@ public class MatchesFragment extends Fragment {
             }, GET_MATCHES_WAIT_TIME_MS);
         } else{
             profiles = matchService.getSuccessFullMatches();
+            //TODO: Think about adding a viewmodel instead
             setupRecyclerView(convos, profiles);
         }
     }
