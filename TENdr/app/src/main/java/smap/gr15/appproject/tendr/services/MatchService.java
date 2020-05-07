@@ -29,6 +29,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -62,10 +63,14 @@ public class MatchService extends Service {
     private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
     private int UNWANTED_MATCHES_LIMIT = 100;
     private int WANTED_MATCHES_LIMIT = 100;
+    private boolean successfulMatchesFetched = false;
+    private boolean wantedMatchesFetched = false;
+    private boolean unwantedMatchesFetched = false;
+    private boolean swipeableProfilesFetched = false;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
     private ProfileList wantedMatches;
     private ProfileList unwantedMatches;
-    private List<Profile> successfulMatches = new ArrayList<Profile>();
+    private ArrayList<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     public static final String NOTIFICATIONS_ID = "NOTIFICATIONS_ID";
@@ -76,7 +81,6 @@ public class MatchService extends Service {
     private List<ConversationNotification> ConversationNotification = new ArrayList<>();
     private FirebaseAuth Auth;
     ListenerRegistration registration;
-
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -97,13 +101,7 @@ public class MatchService extends Service {
 
         Auth = FirebaseAuth.getInstance();
 
-
-        /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
-        fetchOwnProfileData("alexboi@mail.dk");//("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
-        createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
-                "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
-        */
     }
 
     @Override
@@ -127,13 +125,23 @@ public class MatchService extends Service {
         Log.d(LOG, "MatchService has been destroyed");
     }
 
+    public boolean serviceIsInit() {
+        return successfulMatchesFetched && wantedMatchesFetched && unwantedMatchesFetched && swipeableProfilesFetched;
+    }
+
     // Should perhaps also have a broadcast method. Activities can get all matches at startup, and
     // should instantly get updated if a new match happens
-    public List<Profile> getMatches() {
+    public ArrayList<Profile> getMatches() {
         return successfulMatches;
     }
 
-    public List<Profile> getSwipeableProfiles() {
+    public LinkedList<Profile> getSwipeableProfiles() {
+        // return profiles, then empty and get new profiles
+
+        if (swipeableProfiles.size() == 0 && ownProfile != null) {
+                updateSwipeQueueIfNeeded();
+        }
+
         return swipeableProfiles;
     }
 
@@ -197,15 +205,25 @@ public class MatchService extends Service {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d(LOG, "DocumentSnapshot data: " + document.getData());
-                        wantedMatches = document.toObject(ProfileList.class); // what if null??
+                        wantedMatches = document.toObject(ProfileList.class);
+                        wantedMatchesFetched = true;
                     } else {
                         Log.d(LOG, "No such document");
+                        wantedMatchesFetched = true;
                     }
                 } else {
                     Log.d(LOG, "get failed with ", task.getException());
+                    wantedMatchesFetched = true;
                 }
             }
         });
+    }
+
+    private void fetchUnwantedMatches(String userId) {
+        // fetch code
+
+
+        unwantedMatchesFetched = true;
     }
 
     private void fetchOwnProfileData(String profileKey) {
@@ -220,7 +238,7 @@ public class MatchService extends Service {
                         ownProfile = document.toObject(Profile.class);
                         fetchSuccessfulMatches(ownProfile.getMatches());
                         fetchWantedMatches(ownProfile.getUserId());
-//                        fetchUnwantedMatches(ownProfile.getUserId());
+                        fetchUnwantedMatches(ownProfile.getUserId());
                         fetchProfilesForSwiping(ownProfile);
                     } else {
                         Log.d(LOG, "No such document");
@@ -236,9 +254,10 @@ public class MatchService extends Service {
     // query takes, rather it's the size of the data the query returns. Bandwith is the limiting factor.
     // Source: https://medium.com/firebase-developers/why-is-my-cloud-firestore-query-slow-e081fb8e55dd
     private void fetchSuccessfulMatches(List<String> matchIds) {
+        successfulMatchesFetched = true;
         if (!matchIds.isEmpty()) {
             db.collection(PROFILES_DB)
-                    .whereIn("email", matchIds)
+                    .whereIn("userId", matchIds)
                     .limit(MATCH_LIMIT)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -251,8 +270,10 @@ public class MatchService extends Service {
                                     Profile matchedProfile = document.toObject(Profile.class);
                                     successfulMatches.add(matchedProfile);
                                 }
+                                successfulMatchesFetched = true;
                             } else {
                                 Log.d(LOG, "Error getting documents: ", task.getException());
+                                successfulMatchesFetched = true;
                             }
                         }
                     });
@@ -261,7 +282,7 @@ public class MatchService extends Service {
 
     // Currently has no smart algorithme to prefer people of same city, only matches base on same country
     private void fetchProfilesForSwiping(Profile ownProfiles) {
-        db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+        db.collection(PROFILES_DB)
                 .whereEqualTo("country", ownProfiles.getCountry())
                 .whereArrayContains("genderPreference", ownProfiles.getGender())
                 .limit(PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE)
@@ -275,7 +296,7 @@ public class MatchService extends Service {
                                 Profile swipeableProfile = document.toObject(Profile.class);
                                 swipeableProfiles.add(swipeableProfile);
                             }
-                            int i = 1;
+                            swipeableProfilesFetched = true;
                         } else {
                             Log.d(LOG, "Error getting documents: ", task.getException());
                         }
