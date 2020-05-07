@@ -366,16 +366,20 @@ public class MatchService extends Service {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful())
                 {
-                    ConversationNotification = task.getResult().toObjects(ConversationNotification.class);
+                    List<ConversationNotification> tempConversation = new ArrayList<>();
+
+                    tempConversation = task.getResult().toObjects(ConversationNotification.class);
                     List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
 
-                    for (int i = 0; i < ConversationNotification.size(); i++)
+                    for (int i = 0; i < tempConversation.size(); i++)
                     {
                         String key = documentSnapshots.get(i).getId();
-                        ConversationNotification.get(i).setDocKey(key);
+                        tempConversation.get(i).setDocKey(key);
+
+                        ConversationNotification.add(tempConversation.get(i));
 
                         Log.d("sizeOf", String.valueOf(ConversationNotification.size()));
-                        Log.d("key", ConversationNotification.get(0).getDocKey());
+                        Log.d("key", ConversationNotification.get(i).getDocKey());
                         setupConversationSnapshotListener(key);
                     }
                 }
@@ -387,13 +391,18 @@ public class MatchService extends Service {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful())
                 {
-                    ConversationNotification = task.getResult().toObjects(ConversationNotification.class);
+                    List<ConversationNotification> tempConversation = new ArrayList<>();
+                    tempConversation = task.getResult().toObjects(ConversationNotification.class);
                     List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
 
-                    for (int i = 0; i < ConversationNotification.size(); i++)
+                    for (int i = 0; i < tempConversation.size(); i++)
                     {
                         String key = documentSnapshots.get(i).getId();
-                        ConversationNotification.get(i).setDocKey(key);
+                        tempConversation.get(i).setDocKey(key);
+                        ConversationNotification.add(tempConversation.get(i));
+
+                        Log.d("sizeOf", String.valueOf(ConversationNotification.size()));
+                        Log.d("key", ConversationNotification.get(i).getDocKey());
                         setupConversationSnapshotListener(key);
                     }
 
@@ -410,7 +419,8 @@ public class MatchService extends Service {
         registration = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                Log.d("changes", String.valueOf(queryDocumentSnapshots.size() == ));
+                
+
                 Notification notification;
 
                 notification = setupNotificationsCombat("Something Happened", "Something");
