@@ -458,7 +458,7 @@ public class MatchService extends Service {
 
                 // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
                 // It is not pretty though
-                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0)
+                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0 || doc.getSender().equals(ownProfile.getFirstName()))
                     return;
 
 
