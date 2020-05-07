@@ -48,6 +48,7 @@ import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
 
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_CHAT_COLLECTION;
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_REFERENCE;
 import static smap.gr15.appproject.tendr.utils.Globals.comparedUser;
@@ -80,7 +81,7 @@ public class MatchService extends Service {
     private NotificationManagerCompat notificationManagerCompat;
     private List<ConversationNotification> ConversationNotification = new ArrayList<>();
     private FirebaseAuth Auth;
-    ListenerRegistration registration;
+    private static ListenerRegistration registrationlist;
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -121,7 +122,7 @@ public class MatchService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        registration.remove();
+        registrationlist.remove();
         Log.d(LOG, "MatchService has been destroyed");
     }
 
@@ -354,8 +355,12 @@ public class MatchService extends Service {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("ConversationKey", matchUid);
 
+
+        // Whoever reads this, i spend 2 hours fixing FLAG_UPDATE_CURRENT, because of caching - Now i will go out in the sun and get an ice cream.
+        // In order to fix this, i had to make over 10 logs and my head was about to explode
+        // Then i went to the fridge to get some nice to eat, and guess what, it was fucking empty. Then finally, stackoverflow came to my rescue. Thank you Sagar from StackOverflow
         PendingIntent contentIntent =
-                PendingIntent.getActivity(this, 0, intent, 0);
+                PendingIntent.getActivity(this, 0, intent, FLAG_UPDATE_CURRENT);
 
         Log.d("IM IN SETCOMBAT", "COMBAT");
         return new NotificationCompat.Builder(this,
@@ -445,7 +450,7 @@ public class MatchService extends Service {
     private void setupConversationSnapshotListener(String key)
     {
         CollectionReference documentReference = db.collection(CONVERSATION_REFERENCE).document(key).collection(CONVERSATION_CHAT_COLLECTION);
-        registration = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        registrationlist = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
 
@@ -456,21 +461,30 @@ public class MatchService extends Service {
 
                 ChatMessage doc = queryDocumentSnapshots.getDocumentChanges().get(0).getDocument().toObject(ChatMessage.class);
 
-                // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
-                // It is not pretty though
-                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0 || doc.getSender().equals(ownProfile.getFirstName()))
-                    return;
+                String id = getMatchUserUid(key);
 
+                Log.d("idd", id);
+
+                // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
+                // It is not pretty though :()
+                // || id.equals(ownProfile.getUserId())
+                Log.d("docc", doc.getSender());
+                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0)
+                {
+                    Log.d("reutrning", "return");
+                    return;
+                }
+
+                Log.d("reutrnings", "returns");
 
                 Notification notification;
-
-                String id = getUserUid(key);
 
                 if(id.equals(""))
                 {
                     notification = setupNotificationsCombat(doc.getSender(), doc.getMessage());
                 }
                 else{
+                    Log.d("matchuid", id);
                     notification = setupNotificationsCombat(doc.getSender(), doc.getMessage(), id);
                 }
 
@@ -482,7 +496,7 @@ public class MatchService extends Service {
 
     }
 
-    private String getUserUid(String key)
+    private String getMatchUserUid(String key)
     {
         //find key
         for( ConversationNotification c : ConversationNotification)
