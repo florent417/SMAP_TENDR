@@ -1,9 +1,13 @@
 package smap.gr15.appproject.tendr.services;
+import smap.gr15.appproject.tendr.activities.ChatActivity;
+import smap.gr15.appproject.tendr.activities.MainActivity;
+import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.ConversationNotification;
 import smap.gr15.appproject.tendr.utils.Globals;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +24,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,6 +35,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -91,9 +97,6 @@ public class MatchService extends Service {
 
         Auth = FirebaseAuth.getInstance();
 
-        // Message notifications
-        setupNewMessageNotifications();
-        updateNewMessageNotifications();
 
         /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
@@ -106,7 +109,13 @@ public class MatchService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Create notification channel
+
+        // Message notifications
+        setupNewMessageNotifications();
+        updateNewMessageNotifications();
+
         return super.onStartCommand(intent, flags, startId);
+
 
         // return START_STICKY
     }
@@ -281,7 +290,7 @@ public class MatchService extends Service {
 
         setupChannel();
 
-        Notification notification = setupNotificationsCombat("New Message will appear here", "Some text message here");
+        Notification notification = setupNotificationsCombat("Welcome to TENdr","Here you will receive new messages");
 
         notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
 
@@ -305,6 +314,9 @@ public class MatchService extends Service {
 
     private Notification setupNotificationsCombat(String title, String text)
     {
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+
         Log.d("IM IN SETCOMBAT", "COMBAT");
         return new NotificationCompat.Builder(this,
                 NOTIFICATIONS_ID)
@@ -312,6 +324,26 @@ public class MatchService extends Service {
                 .setContentText(text)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
+                .build();
+    }
+
+    private Notification setupNotificationsCombat(String title, String text, String matchUid)
+    {
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("ConversationKey", matchUid);
+
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, intent, 0);
+
+        Log.d("IM IN SETCOMBAT", "COMBAT");
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
                 .build();
     }
 
@@ -329,31 +361,7 @@ public class MatchService extends Service {
 
         @Override
         public void run() {
-
-            if(ConversationNotification == null || ConversationNotification.isEmpty())
-            {
-                Log.d("populatecalled", "populate");
-                populateConversationList();
-            }
-
-            try {
-                Thread.sleep(30000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            Notification notification;
-
-            //Check for new messages
-            if(!ConversationNotification.isEmpty())
-            {
-                Log.d("sizeofcon", String.valueOf(ConversationNotification.size()));
-
-            }
-
-            run();
-
-
+            populateConversationList();
         }
     };
 
@@ -419,11 +427,32 @@ public class MatchService extends Service {
         registration = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                
+
+                if (e != null) {
+                    Log.w("Error", "listen:error", e);
+                    return;
+                }
+
+                ChatMessage doc = queryDocumentSnapshots.getDocumentChanges().get(0).getDocument().toObject(ChatMessage.class);
+
+                // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
+                // It is not pretty though
+                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0)
+                    return;
+
 
                 Notification notification;
 
-                notification = setupNotificationsCombat("Something Happened", "Something");
+                String id = getUserUid(key);
+
+                if(id.equals(""))
+                {
+                    notification = setupNotificationsCombat(doc.getSender(), doc.getMessage());
+                }
+                else{
+                    notification = setupNotificationsCombat(doc.getSender(), doc.getMessage(), id);
+                }
+
 
                 notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
             }
@@ -431,5 +460,24 @@ public class MatchService extends Service {
 
 
     }
+
+    private String getUserUid(String key)
+    {
+        //find key
+        for( ConversationNotification c : ConversationNotification)
+        {
+            if(c.getDocKey().equals(key))
+            {
+                if(!c.getFirstUserId().equals(Auth.getUid()))
+                    return c.getFirstUserId();
+                else{
+                    return c.getSecondUserId();
+                }
+            }
+        }
+
+        return "";
+    }
+
 
 }
