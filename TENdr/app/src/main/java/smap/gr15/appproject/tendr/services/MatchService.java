@@ -19,8 +19,12 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -37,6 +41,7 @@ import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
 
+import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_CHAT_COLLECTION;
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_REFERENCE;
 import static smap.gr15.appproject.tendr.utils.Globals.comparedUser;
 import static smap.gr15.appproject.tendr.utils.Globals.firstUser;
@@ -64,6 +69,7 @@ public class MatchService extends Service {
     private NotificationManagerCompat notificationManagerCompat;
     private List<ConversationNotification> ConversationNotification = new ArrayList<>();
     private FirebaseAuth Auth;
+    ListenerRegistration registration;
 
 
     public class MatchServiceBinder extends Binder {
@@ -108,7 +114,7 @@ public class MatchService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        registration.remove();
         Log.d(LOG, "MatchService has been destroyed");
     }
 
@@ -343,8 +349,6 @@ public class MatchService extends Service {
             {
                 Log.d("sizeofcon", String.valueOf(ConversationNotification.size()));
 
-
-                seachForChangeInConversation();
             }
 
             run();
@@ -362,20 +366,18 @@ public class MatchService extends Service {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful())
                 {
-                    /*
                     ConversationNotification = task.getResult().toObjects(ConversationNotification.class);
-                    List<DocumentSnapshot> documentSnapshots
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
 
-                    if(querySnapshot != null)
+                    for (int i = 0; i < ConversationNotification.size(); i++)
                     {
-                        List<ConversationNotification> tempConv = querySnapshot.toObjects(ConversationNotification.class);
-                        for (ConversationNotification conversationNotification : tempConv)
-                        {
+                        String key = documentSnapshots.get(i).getId();
+                        ConversationNotification.get(i).setDocKey(key);
 
-                        }
+                        Log.d("sizeOf", String.valueOf(ConversationNotification.size()));
+                        Log.d("key", ConversationNotification.get(0).getDocKey());
+                        setupConversationSnapshotListener(key);
                     }
-
-                     */
                 }
             }
         });
@@ -385,16 +387,15 @@ public class MatchService extends Service {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful())
                 {
-                    /*
-                    QuerySnapshot tempconv = task.getResult();
+                    ConversationNotification = task.getResult().toObjects(ConversationNotification.class);
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
 
-
-
-                    if(!tempconv.isEmpty())
+                    for (int i = 0; i < ConversationNotification.size(); i++)
                     {
-                        ConversationNotification.addAll(tempconv.toObjects(Conversation.class));
-
-                    }*/
+                        String key = documentSnapshots.get(i).getId();
+                        ConversationNotification.get(i).setDocKey(key);
+                        setupConversationSnapshotListener(key);
+                    }
 
                 }
             }
@@ -403,7 +404,20 @@ public class MatchService extends Service {
 
     }
 
-    private void seachForChangeInConversation(){
+    private void setupConversationSnapshotListener(String key)
+    {
+        CollectionReference documentReference = db.collection(CONVERSATION_REFERENCE).document(key).collection(CONVERSATION_CHAT_COLLECTION);
+        registration = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                Log.d("changes", String.valueOf(queryDocumentSnapshots.size() == ));
+                Notification notification;
+
+                notification = setupNotificationsCombat("Something Happened", "Something");
+
+                notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+            }
+        });
 
 
     }

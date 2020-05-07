@@ -11,6 +11,7 @@ public class Globals {
     public static String firstUser = "firstUserId";
     public static String secondUser = "secondUserId";
     public static String comparedUser = "combinedUserUid";
+    public static String CONVERSATION_CHAT_COLLECTION = "chatMessages";
 
 
 }
