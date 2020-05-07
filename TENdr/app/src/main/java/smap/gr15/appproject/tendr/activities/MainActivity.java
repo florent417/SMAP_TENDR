@@ -54,12 +54,6 @@ public class MainActivity extends AppCompatActivity {
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
 
         setupMatchService();
-
-        if(savedInstanceState == null){
-            matchesFragment = new MatchesFragment(matchService);
-
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES).commit();
-        }
     }
 
     private void setupMatchService() {
@@ -77,13 +71,23 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
     }
 
+    private void setupMatchesFragment(){
+        matchesFragment = new MatchesFragment(matchService);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
+                .commit();
+    }
+
 
     private void setupConnectionToMatchService() {
         matchServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
-                createSwipeFragment();
+                //createSwipeFragment();
+                setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
             }
 
@@ -108,10 +112,5 @@ public class MainActivity extends AppCompatActivity {
                     MatchService.class), matchServiceConnection, Context.BIND_AUTO_CREATE);
             matchServiceBound = true;
         }
-    }
-
-    // Ref: https://stackoverflow.com/questions/37044203/bound-service-with-activity-with-fragment
-    public interface ConnectedToServices{
-        void onConnectedToMatchService(MatchService matchService);
     }
 }

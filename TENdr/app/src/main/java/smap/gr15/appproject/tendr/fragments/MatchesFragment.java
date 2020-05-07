@@ -9,13 +9,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -45,7 +48,7 @@ import smap.gr15.appproject.tendr.utils.Globals;
  * Use the {@link MatchesFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MatchesFragment extends Fragment implements MainActivity.ConnectedToServices {
+public class MatchesFragment extends Fragment {
     private static final String TAG = "MatchesFragment";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String testUID1 = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
@@ -59,6 +62,13 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
     private MatchAdapter matchAdapter;
     private RecyclerView.LayoutManager layoutManager;
     List<Conversation> convos = new ArrayList<>();
+    List<Profile> profiles = new ArrayList<>();
+    private final int GET_MATCHES_WAIT_TIME_MS = 1000;
+
+    private View testView = null;
+
+    private FirebaseAuth Auth = FirebaseAuth.getInstance();
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -74,7 +84,7 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
         // Required empty public constructor
     }
 
-    public MatchesFragment(MatchService matchService){
+    public MatchesFragment (MatchService matchService){
         this.matchService = matchService;
     }
 
@@ -103,21 +113,34 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        getMatches();
         getConversations();
+
+
+
+        //View soemehting = getView();
+        //setupRecyclerView(convos, profiles);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_matches, container, false);
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_matches, container, false);
+        testView = view;
+        Log.d(TAG, Integer.toString(convos.size()));
+
+
+        return view;
     }
 
     private void getConversations(){
         CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
         Query getConvosQuery = findMatches
-                .whereGreaterThanOrEqualTo("combinedUserUid", testUID2)
-                .whereLessThanOrEqualTo("combinedUserUid", testUID2 + JAVA_UNICODE_ESCAPE_CHAR);
+                .whereGreaterThanOrEqualTo("combinedUserUid", Auth.getUid())
+                .whereLessThanOrEqualTo("combinedUserUid", Auth.getUid() + JAVA_UNICODE_ESCAPE_CHAR);
 
         getConvosQuery.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -126,30 +149,24 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
                         convos = task.getResult().toObjects(Conversation.class);
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         for (int i = 0; i < convos.size(); i++){
-                            Conversation tempConvo = convos.get(i);
                             String docRef = documentSnapshots.get(i).getId();
                             getMessages(i, docRef);
                         }
-                        /*
-                        for(DocumentSnapshot documentSnapshot : task.getResult()){
-
-                            Conversation tempConvo = documentSnapshot.toObject(Conversation.class);
-                            Conversation tempConvo2 = convos.get(0);
-                            Log.d(TAG, "Convos index: " + convos.indexOf(tempConvo));
-                            Log.d(TAG, "Convo somehting1: " + tempConvo.getCombinedUserUid());
-                            Log.d(TAG, "Convo somehting2: " + convos.get(0).getCombinedUserUid());
-                            String docRef = documentSnapshot.getId();
-                            getMessages(tempConvo, docRef);
-                        }
-
-                         */
-
                     }
                 });
     }
 
     private void getMessages(int convoIndex, String conversationDocRef){
-        db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document(conversationDocRef).collection(Globals.FIREBASE_CHAT_MSG_PATH)
+        CollectionReference lastMsgRef = db
+                .collection(Globals.FIREBASE_CONVERSATIONS_PATH)
+                .document(conversationDocRef)
+                .collection(Globals.FIREBASE_CHAT_MSG_PATH);
+
+        Query lastMsgQuery = lastMsgRef
+                .orderBy("timeStamp", Query.Direction.DESCENDING)
+                .limit(1);
+
+        lastMsgQuery
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -159,26 +176,36 @@ public class MatchesFragment extends Fragment implements MainActivity.ConnectedT
                         Conversation conversation = convos.get(convoIndex);
                         conversation.setChatMessages(chatMessages);
                         convos.set(convoIndex, conversation);
-                        setupRecyclerView(convos);
                         //Log.d(TAG, "Got convo: " + convos.get(0).getCombinedUserUid());
                         Log.d(TAG, Integer.toString(convos.size()));
                     }
                 });
     }
 
-    private void setupRecyclerView(List<Conversation> conversations){
-        recyclerView = getView().findViewById(R.id.RecyclerView_Matches_OverView);
+    private void setupRecyclerView(List<Conversation> conversations, List<Profile> matchedProfiles){
+        recyclerView = testView.findViewById(R.id.RecyclerView_Matches_OverView);
         // Maybe another context
-        layoutManager = new LinearLayoutManager(getContext());
+        layoutManager = new LinearLayoutManager(testView.getContext());
         recyclerView.setLayoutManager(layoutManager);
-        matchAdapter = new MatchAdapter(getContext(), conversations);
+        Log.d(TAG, "setupRecyclerView: convo size" + convos.size() );
+        matchAdapter = new MatchAdapter(getContext(), conversations, matchedProfiles);
         recyclerView.setAdapter(matchAdapter);
         matchAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onConnectedToMatchService(MatchService matchService) {
-        this.matchService = matchService;
-        getConversations();
+    private void getMatches(){
+        if(!matchService.serviceIsInit()){
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getMatches();
+                }
+            }, GET_MATCHES_WAIT_TIME_MS);
+        } else{
+            profiles = matchService.getSuccessFullMatches();
+            setupRecyclerView(convos, profiles);
+
+        }
     }
 }
