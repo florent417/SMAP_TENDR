@@ -1,6 +1,11 @@
 package smap.gr15.appproject.tendr.services;
-
+import smap.gr15.appproject.tendr.models.ConversationNotification;
+import smap.gr15.appproject.tendr.utils.Globals;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -8,21 +13,34 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
+
+import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_REFERENCE;
+import static smap.gr15.appproject.tendr.utils.Globals.comparedUser;
+import static smap.gr15.appproject.tendr.utils.Globals.firstUser;
+import static smap.gr15.appproject.tendr.utils.Globals.secondUser;
 
 public class MatchService extends Service {
     private final String LOG = "MatchService LOG";
@@ -39,6 +57,13 @@ public class MatchService extends Service {
     private List<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public static final String NOTIFICATIONS_ID = "NOTIFICATIONS_ID";
+    public static final String NOTIFICATIONS_NAME = "NOTIFICATIONS_NAME";
+    public static final Integer NOTIFICATIONS_ID_INTEGER = 1;
+    private ExecutorService notificationsExecutor;
+    private NotificationManagerCompat notificationManagerCompat;
+    private List<ConversationNotification> ConversationNotification = new ArrayList<>();
+    private FirebaseAuth Auth;
 
 
     public class MatchServiceBinder extends Binder {
@@ -58,6 +83,11 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
 
+        Auth = FirebaseAuth.getInstance();
+
+        // Message notifications
+        setupNewMessageNotifications();
+        updateNewMessageNotifications();
 
         /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
@@ -65,7 +95,6 @@ public class MatchService extends Service {
         createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
                 "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
         */
-
     }
 
     @Override
@@ -237,6 +266,145 @@ public class MatchService extends Service {
                         }
                     }
                 });
+
+    }
+
+    private void setupNewMessageNotifications()
+    {
+        notificationManagerCompat = NotificationManagerCompat.from(this);
+
+        setupChannel();
+
+        Notification notification = setupNotificationsCombat("New Message will appear here", "Some text message here");
+
+        notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+
+        startForeground(NOTIFICATIONS_ID_INTEGER, notification);
+    }
+
+    private void setupChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) { //needed because channels are not supported on older versions
+
+            Log.d("IM IN SETUP" , "SETUP");
+
+            NotificationChannel mChannel = new NotificationChannel(NOTIFICATIONS_ID,
+                    NOTIFICATIONS_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT);
+
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+    }
+
+    private Notification setupNotificationsCombat(String title, String text)
+    {
+        Log.d("IM IN SETCOMBAT", "COMBAT");
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build();
+    }
+
+    private void updateNewMessageNotifications()
+    {
+        if(notificationsExecutor == null)
+        {
+            notificationsExecutor = Executors.newSingleThreadExecutor();
+        }
+
+        notificationsExecutor.submit(UpdateNotificationsThread);
+    }
+
+    private Runnable UpdateNotificationsThread = new Runnable(){
+
+        @Override
+        public void run() {
+
+            if(ConversationNotification == null || ConversationNotification.isEmpty())
+            {
+                Log.d("populatecalled", "populate");
+                populateConversationList();
+            }
+
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            Notification notification;
+
+            //Check for new messages
+            if(!ConversationNotification.isEmpty())
+            {
+                Log.d("sizeofcon", String.valueOf(ConversationNotification.size()));
+
+
+                seachForChangeInConversation();
+            }
+
+            run();
+
+
+        }
+    };
+
+    private void populateConversationList(){
+        String myUserId = Auth.getUid();
+
+        //Get collections where the user is involved
+        db.collection(CONVERSATION_REFERENCE).whereEqualTo(firstUser, myUserId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    /*
+                    ConversationNotification = task.getResult().toObjects(ConversationNotification.class);
+                    List<DocumentSnapshot> documentSnapshots
+
+                    if(querySnapshot != null)
+                    {
+                        List<ConversationNotification> tempConv = querySnapshot.toObjects(ConversationNotification.class);
+                        for (ConversationNotification conversationNotification : tempConv)
+                        {
+
+                        }
+                    }
+
+                     */
+                }
+            }
+        });
+
+        db.collection(CONVERSATION_REFERENCE).whereEqualTo(secondUser, myUserId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    /*
+                    QuerySnapshot tempconv = task.getResult();
+
+
+
+                    if(!tempconv.isEmpty())
+                    {
+                        ConversationNotification.addAll(tempconv.toObjects(Conversation.class));
+
+                    }*/
+
+                }
+            }
+        });
+
+
+    }
+
+    private void seachForChangeInConversation(){
+
 
     }
 

@@ -166,11 +166,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
         profileService = null;
         unbindService(profileServiceConnection);
         profileServiceBound = false;
-        super.onStop();
+        super.onDestroy();
     }
 
     @Override

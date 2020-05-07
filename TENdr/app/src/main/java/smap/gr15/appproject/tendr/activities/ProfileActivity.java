@@ -90,6 +90,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     // When cancellation of picture choice happens
     // the connection is turned off, therefore we need to reconnect
+    /*
     @Override
     protected void onResume() {
         super.onResume();
@@ -102,6 +103,16 @@ public class ProfileActivity extends AppCompatActivity {
         unbindService(profileServiceConnection);
         profileServiceBound = false;
         super.onStop();
+    }
+
+     */
+
+    @Override
+    protected void onDestroy() {
+        profileService = null;
+        unbindService(profileServiceConnection);
+        profileServiceBound = false;
+        super.onDestroy();
     }
 
     private void setupProfileServiceConnection(){
@@ -197,6 +208,7 @@ public class ProfileActivity extends AppCompatActivity {
             progressDialog.setTitle("Deleting image...");
             progressDialog.show();
 
+
             // TODO: Maybe work on the urls on the profile urls
             String imageUrl = imgUrls.get(position);
             profileService.deletePhoto(imageUrl, userProfileOperationsListener);
@@ -221,6 +233,8 @@ public class ProfileActivity extends AppCompatActivity {
 
             Uri filePath = data.getData();
 
+            Log.d("image", filePath.toString());
+            Log.d("service", profileService.toString());
             profileService.uploadPhoto(filePath, userProfileOperationsListener);
         }
     }
