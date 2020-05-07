@@ -21,6 +21,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -74,7 +75,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/country_of_residence"
-                android:inputType="text" />
+                android:inputType="textNoSuggestions"
+                />
 
 
             <Space
@@ -93,7 +95,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/city_of_residence"
-                android:inputType="text" />
+                android:inputType="textNoSuggestions" />
 
             <Space
                 android:layout_width="match_parent"
@@ -111,7 +113,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/what_s_your_occupation"
-                android:inputType="text" />
+                android:inputType="textNoSuggestions" />
 
             <Space
                 android:layout_width="match_parent"
@@ -136,46 +138,19 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
+
+
+
 
 
             <Button
                 android:id="@+id/buttonSignOut"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:background="@color/colorButtons"
                 android:text="@string/sign_out"
-                android:textColor="@color/colorButtonsText"
-                android:layout_gravity="center"/>
+                android:textColor="@color/colorButtonsText" />
 
 
         </LinearLayout>

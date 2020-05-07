@@ -119,7 +119,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setupMediaPlayerForFunnySong()
     {
-        mediaPlayer = MediaPlayer.create(this, R.raw.congratulations);
+        mediaPlayer = MediaPlayer.create(this, R.raw.yoooo);
     }
 
     private void setupOnClickListeners()
@@ -212,6 +212,7 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onGetProfileSuccess(Profile userProfile) {
             profile = userProfile;
+            Log.d("called", "imgettingcalled");
             setupUserSpecificUI();
         }
 
