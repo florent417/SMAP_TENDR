@@ -170,14 +170,11 @@ public class MatchesFragment extends Fragment {
 
     private void setupRecyclerView(List<Conversation> conversations, List<Profile> matchedProfiles){
         recyclerView = view.findViewById(R.id.RecyclerView_Matches_OverView);
-        // Maybe another context
-        layoutManager = new LinearLayoutManager(view.getContext());
+        layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-        Log.d(TAG, "setupRecyclerView: convo size" + convos.size() );
         matchAdapter = new MatchAdapter(getContext(), conversations, matchedProfiles);
         matchAdapter.setOnMatchClickListener(onMatchClickListener);
         recyclerView.setAdapter(matchAdapter);
-        matchAdapter.notifyDataSetChanged();
     }
 
     private void getMatches(){
@@ -204,7 +201,7 @@ public class MatchesFragment extends Fragment {
             intent.putExtra(Globals.CONVERSATION_KEY, matchProfileUId);
 
             startActivity(intent);
-            // TODO: Find out what to here, finish?
+            // TODO: Find out what to do here, finish?
         }
     };
 }
