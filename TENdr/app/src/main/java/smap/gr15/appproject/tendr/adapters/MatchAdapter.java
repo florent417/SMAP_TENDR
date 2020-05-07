@@ -31,6 +31,14 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
     private List<Profile> matchedProfiles = new ArrayList<>();
     private Context context;
 
+    private OnMatchClickListener onMatchClickListener;
+    public interface OnMatchClickListener{
+        void onMatchClick(String matchProfileUId);
+    }
+    public void setOnMatchClickListener(OnMatchClickListener onMatchClickListener) {
+        this.onMatchClickListener = onMatchClickListener;
+    }
+
     public MatchAdapter(Context context, List<Conversation> conversations, List<Profile> matchedProfiles){
         this.context = context;
         this.conversations = conversations;
@@ -87,6 +95,18 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
             lastMsgEditText = itemView.findViewById(R.id.LastMsg_EditText_match);
             profilePictureImageView = itemView.findViewById(R.id.ProfileImage_ImageView_match);
             nameTextView = itemView.findViewById(R.id.Name_TextView_match);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onMatchClickListener != null){
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            Profile chosenMatch = matchedProfiles.get(position);
+                            onMatchClickListener.onMatchClick(chosenMatch.getUserId());
+                        }
+                    }
+                }
+            });
         }
     }
 }

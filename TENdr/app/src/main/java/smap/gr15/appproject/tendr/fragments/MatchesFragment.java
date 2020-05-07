@@ -50,10 +50,7 @@ import smap.gr15.appproject.tendr.utils.Globals;
  */
 public class MatchesFragment extends Fragment {
     private static final String TAG = "MatchesFragment";
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String testUID1 = "9PH4nGqkaQNmhrIAygcxddO4ljl2";
-    private String testUID2 = "T0Wg4ZuO7Cg4X2aBnVAHFqizlAf1";
-    private String ref = "jN9BhcJ4LZpnoDzXNVsJ";
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     // Ref: https://stackoverflow.com/questions/56659321/what-does-uf8ff-mean-in-java
     private String JAVA_UNICODE_ESCAPE_CHAR = "\uf8ff";
     private MatchService matchService = null;
@@ -61,11 +58,11 @@ public class MatchesFragment extends Fragment {
     private RecyclerView recyclerView;
     private MatchAdapter matchAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    List<Conversation> convos = new ArrayList<>();
-    List<Profile> profiles = new ArrayList<>();
+    private List<Conversation> convos = new ArrayList<>();
+    private List<Profile> profiles = new ArrayList<>();
     private final int GET_MATCHES_WAIT_TIME_MS = 1000;
 
-    private View testView = null;
+    private View view = null;
 
     private FirebaseAuth Auth = FirebaseAuth.getInstance();
 
@@ -116,12 +113,6 @@ public class MatchesFragment extends Fragment {
 
         getMatches();
         getConversations();
-
-
-
-        //View soemehting = getView();
-        //setupRecyclerView(convos, profiles);
-
     }
 
     @Override
@@ -129,10 +120,7 @@ public class MatchesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_matches, container, false);
         // Inflate the layout for this fragment
-        testView = view;
-        Log.d(TAG, Integer.toString(convos.size()));
-
-
+        this.view = view;
         return view;
     }
 
@@ -150,13 +138,13 @@ public class MatchesFragment extends Fragment {
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         for (int i = 0; i < convos.size(); i++){
                             String docRef = documentSnapshots.get(i).getId();
-                            getMessages(i, docRef);
+                            getLastMessage(i, docRef);
                         }
                     }
                 });
     }
 
-    private void getMessages(int convoIndex, String conversationDocRef){
+    private void getLastMessage(int conversationIndex, String conversationDocRef){
         CollectionReference lastMsgRef = db
                 .collection(Globals.FIREBASE_CONVERSATIONS_PATH)
                 .document(conversationDocRef)
@@ -171,24 +159,23 @@ public class MatchesFragment extends Fragment {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        Log.d(TAG, "Inside get chats");
                         List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
-                        Conversation conversation = convos.get(convoIndex);
+                        Conversation conversation = convos.get(conversationIndex);
                         conversation.setChatMessages(chatMessages);
-                        convos.set(convoIndex, conversation);
-                        //Log.d(TAG, "Got convo: " + convos.get(0).getCombinedUserUid());
+                        convos.set(conversationIndex, conversation);
                         Log.d(TAG, Integer.toString(convos.size()));
                     }
                 });
     }
 
     private void setupRecyclerView(List<Conversation> conversations, List<Profile> matchedProfiles){
-        recyclerView = testView.findViewById(R.id.RecyclerView_Matches_OverView);
+        recyclerView = view.findViewById(R.id.RecyclerView_Matches_OverView);
         // Maybe another context
-        layoutManager = new LinearLayoutManager(testView.getContext());
+        layoutManager = new LinearLayoutManager(view.getContext());
         recyclerView.setLayoutManager(layoutManager);
         Log.d(TAG, "setupRecyclerView: convo size" + convos.size() );
         matchAdapter = new MatchAdapter(getContext(), conversations, matchedProfiles);
+        matchAdapter.setOnMatchClickListener(onMatchClickListener);
         recyclerView.setAdapter(matchAdapter);
         matchAdapter.notifyDataSetChanged();
     }
@@ -205,7 +192,19 @@ public class MatchesFragment extends Fragment {
         } else{
             profiles = matchService.getSuccessFullMatches();
             setupRecyclerView(convos, profiles);
-
         }
     }
+
+    private MatchAdapter.OnMatchClickListener onMatchClickListener = new MatchAdapter.OnMatchClickListener() {
+        @Override
+        public void onMatchClick(String matchProfileUId) {
+            Log.d(TAG, "onMatchClick: ");
+            Intent intent = new Intent(view.getContext(), ChatActivity.class);
+
+            intent.putExtra(Globals.CONVERSATION_KEY, matchProfileUId);
+
+            startActivity(intent);
+            // TODO: Find out what to here, finish?
+        }
+    };
 }
