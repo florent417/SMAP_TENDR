@@ -1,11 +1,8 @@
 package smap.gr15.appproject.tendr.models;
 
-import android.util.Log;
-
-import java.util.HashMap;
 import java.util.List;
 
-public class Conversation {
+public class ConversationNotification {
     private List<ChatMessage> chatMessages;
 
     public String getFirstUserId() {
@@ -53,6 +50,14 @@ public class Conversation {
 
     private String combinedUserUid;
 
+    public String getDocKey() {
+        return docKey;
+    }
 
+    public void setDocKey(String docKey) {
+        this.docKey = docKey;
+    }
+
+    private String docKey;
 
 }

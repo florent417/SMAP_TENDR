@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="smap.gr15.appproject.tendr">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,7 +13,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.ChatActivity"/>
         <activity android:name=".activities.MatchesActivity" />
-        <activity android:name=".activities.ProfileActivity" />
+        <activity android:name=".activities.ProfileActivity"/>
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.AuthenticationActivity" >
             <intent-filter>

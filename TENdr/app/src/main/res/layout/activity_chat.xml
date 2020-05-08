@@ -6,11 +6,75 @@
     android:layout_height="match_parent"
     tools:context=".activities.ChatActivity">
 
-    <include
-        android:id="@+id/activity_auth_toolbar"
-        layout="@layout/toolbar_main"
+    <ImageView
+        android:id="@+id/imageViewBack_chatActivity"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/ic_backbutton"
+        android:alpha="0.75"/>
+
+
+    <ImageView
+        android:id="@+id/imageViewPicture_chatActivity"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:src="@drawable/ic_logo"
+        app:layout_constraintEnd_toStartOf="@+id/textViewName_chatActivity"
+        app:layout_constraintTop_toBottomOf="@+id/activity_auth_toolbar" />
+
+    <TextView
+        android:id="@+id/textViewName_chatActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:gravity="center"
+        android:text="@string/matchname"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_auth_toolbar" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/RecyclerView_chatActivity"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextChatAcitivty"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewPicture_chatActivity"
+        tools:listitem="@layout/chat_message_item">
+
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <EditText
+        android:id="@+id/editTextChatAcitivty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/send_your_match_a_message"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.8"
+        />
+
+    <Button
+        android:id="@+id/sendButtonChatActivity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/send"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="0.8"
+        app:layout_constraintStart_toEndOf="@+id/editTextChatAcitivty"
+        app:layout_constraintTop_toTopOf="@+id/editTextChatAcitivty"
+        app:layout_constraintWidth_percent="0.2" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,6 +11,24 @@
     <string name="Country">Country</string>
     <string name="SIGNUP">SIGN UP</string>
     <string name="ALREADYUSER">Already have an account?</string>
+    <string name="Bio">Bio</string>
+    <string name="Gender">Gender</string>
+    <string name="Save">Save</string>
+    <string name="matchname">matchname</string>
+    <string name="send_your_match_a_message">Send a message</string>
+    <string name="send">Send</string>
+    <string name="nametext">nametext</string>
+    <string name="messagetext">messagetext</string>
+    <string name="ProfilePreference">Show me</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="location">Location</string>
+    <string name="country_of_residence">Country of Residence</string>
+    <string name="city_of_residence">City Of Residence</string>
+    <string name="what_s_your_occupation">What\'s your Occupation?</string>
+    <string name="apply">APPLY</string>
+    <string name="timestamp">timeStamp</string>
+    <string name="sign_out">Sign Out</string>
     <string-array name="Sex">
         <item>Male</item>
         <item>Female</item>

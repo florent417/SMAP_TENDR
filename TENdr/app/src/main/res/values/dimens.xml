@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="ProfileGridHeight">325dp</dimen>
+    <dimen name="ProfileImageButtonMarginTop">118dp</dimen>
+    <dimen name="ProfileImageButtonMarginLeft">93dp</dimen>
+</resources>
