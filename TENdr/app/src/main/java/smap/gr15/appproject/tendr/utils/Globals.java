@@ -8,7 +8,6 @@ public class Globals {
     public final static String FIREBASE_Profiles_PATH = "profiles";
     public final static String CONVERSATION_KEY = "ConversationKey";
     public final static String FIREBASE_STORAGE_PICTURES_PATH = "pictures";
-    public final static String CONVERSATION_KEY = "ConversationKey";
     public static String CONVERSATION_REFERENCE = "conversations";
     public static String firstUser = "firstUserId";
     public static String secondUser = "secondUserId";
