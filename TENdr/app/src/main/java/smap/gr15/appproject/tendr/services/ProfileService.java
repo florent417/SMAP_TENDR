@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,10 +29,22 @@ import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileService extends Service {
     private static final String TAG = "ProfileService";
+    private static final String TAG_DOWNLOAD_URL_FAILED = "Something went wrong, could not download photo";
+    private static final String TAG_UPLOAD_IMAGE_FAILED = "Something went wrong, could not upload photo";
+    private static final String TAG_GET_USER_FAILED = "Could not get user data, check internet connection";
+    private static final String TAG_PHOTO_DELETION_FAILED = "Unable to delete photo. Check internet connection";
+    private static final String TAG_PROFILE_DATA_SAVED = "Profile updated!";
+    private static final String TAG_PROFILE_DATA_SAVE_FAILED = "Unable to update profile. Check internet connection";
+    private String currentLoggedInUserId = null;
+
     private final IBinder binder = new ProfileServiceBinder();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     // Maybe not needed
     private FirebaseStorage storage = FirebaseStorage.getInstance();
+
+    public ProfileService(){
+        currentLoggedInUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
 
     //region Binder Implementaton
     // Ref: https://developer.android.com/guide/components/bound-services
@@ -54,32 +67,42 @@ public class ProfileService extends Service {
     }
     //endregion
 
-    public void getUserProfile(String userId, UserProfileOperationsListener listener){
-        DocumentReference docRef = db.collection(Globals.FIREBASE_Profiles_PATH).document(userId);
+    public void getUserProfile(UserProfileOperationsListener listener){
+        DocumentReference docRef = db.collection(Globals.FIREBASE_Profiles_PATH).document(currentLoggedInUserId);
         Task<DocumentSnapshot> documentSnapshotTask = docRef.get();
 
-        documentSnapshotTask.addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        documentSnapshotTask.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.exists()){
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot documentSnapshot = task.getResult();
                     Profile userProfile = documentSnapshot.toObject(Profile.class);
                     listener.onGetProfileSuccess(userProfile);
+                } else {
+                    Log.d(TAG, "Failed to get profile: " + task.getException());
+                    listener.onOperationFailedMessage(TAG_GET_USER_FAILED);
                 }
             }
         });
     }
 
     // TODO: Change userid to check on runtime
-    public void editUserProfile(String userId, Profile userProfile){
-        db.collection(Globals.FIREBASE_Profiles_PATH).document(userId)
-                .set(userProfile).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "User profile edited");
-            }
-        });
+    public void editUserProfile(Profile userProfile, UserProfileOperationsListener listener){
+        db.collection(Globals.FIREBASE_Profiles_PATH)
+                .document(currentLoggedInUserId).set(userProfile)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            listener.onProfileDataSaved(TAG_PROFILE_DATA_SAVED);
+                        } else {
+                            listener.onOperationFailedMessage(TAG_PROFILE_DATA_SAVE_FAILED);
+                        }
+                    }
+                });
     }
 
+    // reference : https://firebase.google.com/docs/storage/android/upload-files#get_a_download_url
     public void uploadPhoto(Uri imagePath, UserProfileOperationsListener listener){
         StorageReference picStorageRef = storage.getReference().child(Globals.FIREBASE_STORAGE_PICTURES_PATH).child(UUID.randomUUID().toString());
 
@@ -91,20 +114,25 @@ public class ProfileService extends Service {
                 if(!task.isSuccessful()){
                     throw task.getException();
                 }
-
                 return picStorageRef.getDownloadUrl();
             }
         }).addOnCompleteListener(new OnCompleteListener<Uri>() {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
-                String imageDownloadUrl = null;
-                try {
-                    imageDownloadUrl = task.getResult().toString();
-                } catch (Exception e){
-                    Log.d(TAG, e.toString());
+                if(task.isSuccessful()){
+                    String imageDownloadUrl = null;
+                    try {
+                        imageDownloadUrl = task.getResult().toString();
+                    } catch (RuntimeException e){
+                        Log.d(TAG, e.toString());
+                    }
+                    // TODO: What to do if imageurl is null?
+                    listener.onUploadPhotoSuccess(imageDownloadUrl);
                 }
-                // TODO: What to do if imageurl is null?
-                listener.onUploadPhotoSuccess(imageDownloadUrl);
+                else {
+                    Log.d(TAG, "Download img url failed: " + task.getException());
+                    listener.onOperationFailedMessage(TAG_UPLOAD_IMAGE_FAILED);
+                }
             }
         });
     }
@@ -112,22 +140,26 @@ public class ProfileService extends Service {
     public void deletePhoto(String imageUrl, UserProfileOperationsListener listener){
         StorageReference deletePictureStorageRef = storage.getReferenceFromUrl(imageUrl);
 
-        deletePictureStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        deletePictureStorageRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void onSuccess(Void aVoid) {
-                listener.onDeletePhotoSuccess(imageUrl);
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    listener.onDeletePhotoSuccess(imageUrl);
+                } else {
+                    Log.d(TAG, "Deletion of photo failed: " + task.getException());
+                    listener.onOperationFailedMessage(TAG_PHOTO_DELETION_FAILED);
+                }
             }
         });
-
-        // Todo: add message listener if soemthing failed
     }
 
     public interface UserProfileOperationsListener{
         void onGetProfileSuccess(Profile userProfile);
         void onUploadPhotoSuccess(String imageUrl);
         void onDeletePhotoSuccess(String imageUrl);
-        // Todo: add message listener if soemthing failed
-        // Todo: add message for successful operations
-        // TODO: is it necessary to have a callback for edituserprofile??
+        void onProfileDataSaved(String message);
+        void onOperationFailedMessage(String messageToShow);
+        // add message for all successful operations?
+        // is it necessary to have a callback for editUserProfile?
     }
 }
