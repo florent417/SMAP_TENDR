@@ -16,34 +16,30 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
-
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.services.MatchService;
 import smap.gr15.appproject.tendr.utils.SwipeCardAdapter;
-import smap.gr15.appproject.tendr.utils.SwipePagerAdapter;
 
-public class SwipeFragment extends Fragment {
+public class SwipeFragment extends Fragment implements View.OnClickListener {
     // REMOVE ?? Implement swipe fragment using: https://developer.android.com/training/animation/screen-slide-2#viewpager
     // Implement swipe fragment using: https://stackoverflow.com/questions/34620840/how-to-add-swipe-functionality-on-android-cardview
     // and: https://stackoverflow.com/questions/27293960/swipe-to-dismiss-for-recyclerview/30601554#30601554
     private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private final String LOG = "SwipeFragment";
+    private View.OnClickListener mListener;
     private LinkedList<Profile> profilesToSwipe;
     private Profile currentProfileToSwipe;
     private MatchService matchService;
     private RecyclerView swipeRecyclerView;
     private RecyclerView.Adapter swipeAdapter;
     private RecyclerView.LayoutManager swipeLayoutManager;
-    private Button yesButton;
-    private Button noButton;
+    public Button yesButton;
+    public Button noButton;
     private TextView outOfSinglesMessage;
+    //private view
 
     public SwipeFragment(MatchService matchService) {
         this.matchService = matchService;
@@ -56,55 +52,58 @@ public class SwipeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
 
-        //setupView(view);
-        yesButton = view.findViewById(R.id.button_main_fragment_yes);
-        noButton = view.findViewById(R.id.button_main_fragment_no);
-        outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
-
-        noButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //setupRecycler
-                Log.d(LOG, "noButton clicked");
-                swipeLeft();
-            }
-        });
-
-        yesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(LOG, "yesButton clicked");
-                swipeRight();
-            }
-        });
+        setupView(view);
 
         return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        //setupView();
         setupRecyclerView();
     }
 
+    @Override
+    public void onClick(View v) {
+
+        Log.d(LOG, "a button clicked");
+        switch(v.getId()){
+            case R.id.button_main_fragment_yes:
+
+                Log.d(LOG, "yesButton clicked");
+                swipeRight();
+                break;
+            case R.id.button_main_fragment_no:
+                Log.d(LOG, "noButton clicked");
+                swipeLeft();
+                break;
+            default:
+                Log.d(LOG, "what Button clicked");
+                break;
+        }
+    }
+
     private void setupView(View view) {
-        yesButton = view.findViewById(R.id.button_main_fragment_yes);
-        noButton = view.findViewById(R.id.button_main_fragment_no);
+        yesButton = (Button) view.findViewById(R.id.button_main_fragment_yes);
+        noButton = (Button) view.findViewById(R.id.button_main_fragment_no);
         outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
 
-        noButton.setOnClickListener(new View.OnClickListener() {
+        /*final Button notButton = (Button) view.findViewById(R.id.button_main_fragment_no);
+        notButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                Log.d(LOG, "what Button clicked");
+            }
+        });*/
+
+        noButton.setOnClickListener(this);
+        yesButton.setOnClickListener(this);
+
+       /* noButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //setupRecycler
                 Log.d(LOG, "noButton clicked");
                 swipeLeft();
-            }
-        });
-
-        noButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(LOG, "noButton clicked");
             }
         });
 
@@ -114,7 +113,7 @@ public class SwipeFragment extends Fragment {
                 Log.d(LOG, "yesButton clicked");
                 swipeRight();
             }
-        });
+        });*/
     }
 
 
@@ -174,7 +173,7 @@ public class SwipeFragment extends Fragment {
         });
     }*/
 
-    private void swipeRight() {
+    public void swipeRight() {
         String tempUserId = currentProfileToSwipe.getUserId();
 
         removeUserFromSwipeQueue();
@@ -185,7 +184,7 @@ public class SwipeFragment extends Fragment {
         // call matchService.swipeRight(tempUserId)
     }
 
-    private void swipeLeft() {
+    public void swipeLeft() {
         String tempUserId = currentProfileToSwipe.getUserId();
 
         removeUserFromSwipeQueue();

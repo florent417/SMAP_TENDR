@@ -2,6 +2,7 @@ package smap.gr15.appproject.tendr.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.os.IBinder;
 
@@ -83,6 +85,18 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG, "Main Activity disconnected from MatchService");
             }
         };
+    }
+
+    public void yesButtonSwipeClick(View view) {
+        Log.d("SwipeFragment", "yesButton clicked main");
+        SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
+        swipeFragment.swipeRight();
+    }
+
+    public void noButtonSwipeClick(View view) {
+        Log.d("SwipeFragment", "noButton clicked main");
+        SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
+        swipeFragment.swipeLeft();
     }
 
     @Override
