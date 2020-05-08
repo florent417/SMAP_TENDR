@@ -14,7 +14,9 @@
         android:text="@string/yes"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/main_swipe_card" />
+        app:layout_constraintTop_toBottomOf="@+id/main_swipe_card"
+        android:clickable="true"
+        android:focusable="true"/>
 
     <TextView
         android:id="@+id/textView_main_swipe_no_swipes"

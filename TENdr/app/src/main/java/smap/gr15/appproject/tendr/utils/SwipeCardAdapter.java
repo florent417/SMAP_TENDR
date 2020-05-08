@@ -47,8 +47,7 @@ public class SwipeCardAdapter extends RecyclerView.Adapter<SwipeCardAdapter.Swip
         @Override
         public void onBindViewHolder(SwipeCardViewHolder holder, int position) {
             if (profile != null) {
-                // final Profile profile = profiles.get(position);
-                holder.nameAndAge.setText(profile.getFirstName() + ": " + profile.getAge());
+                holder.nameAndAge.setText(profile.getFirstName() + ", " + profile.getAge());
                 holder.bio.setText(profile.getBio());
             } else {
                 holder.itemView.setVisibility(View.GONE);

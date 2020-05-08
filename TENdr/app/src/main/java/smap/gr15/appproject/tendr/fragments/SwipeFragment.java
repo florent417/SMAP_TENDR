@@ -35,13 +35,9 @@ public class SwipeFragment extends Fragment {
     private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private final String LOG = "SwipeFragment";
-    private int lastSwipeCardPosition = 1;
     private LinkedList<Profile> profilesToSwipe;
     private Profile currentProfileToSwipe;
-    private ArrayList<Profile> swipedProfiles = new ArrayList<Profile>();
     private MatchService matchService;
-    private FragmentStateAdapter swipeFragmentStateAdapter;
-    private ViewPager2 viewPager;
     private RecyclerView swipeRecyclerView;
     private RecyclerView.Adapter swipeAdapter;
     private RecyclerView.LayoutManager swipeLayoutManager;
@@ -58,19 +54,67 @@ public class SwipeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return (ViewGroup) inflater.inflate(R.layout.fragment_main_swipe, container, false);
+        View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
+
+        //setupView(view);
+        yesButton = view.findViewById(R.id.button_main_fragment_yes);
+        noButton = view.findViewById(R.id.button_main_fragment_no);
+        outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
+
+        noButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //setupRecycler
+                Log.d(LOG, "noButton clicked");
+                swipeLeft();
+            }
+        });
+
+        yesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(LOG, "yesButton clicked");
+                swipeRight();
+            }
+        });
+
+        return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        setupView();
+        //setupView();
         setupRecyclerView();
     }
 
-    private void setupView() {
-        yesButton = getView().findViewById(R.id.button_main_fragment_yes);
-        noButton = getView().findViewById(R.id.button_main_fragment_no);
-        outOfSinglesMessage = getView().findViewById(R.id.textView_main_swipe_no_swipes);
+    private void setupView(View view) {
+        yesButton = view.findViewById(R.id.button_main_fragment_yes);
+        noButton = view.findViewById(R.id.button_main_fragment_no);
+        outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
+
+        noButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //setupRecycler
+                Log.d(LOG, "noButton clicked");
+                swipeLeft();
+            }
+        });
+
+        noButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(LOG, "noButton clicked");
+            }
+        });
+
+        yesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(LOG, "yesButton clicked");
+                swipeRight();
+            }
+        });
     }
 
 
@@ -158,11 +202,12 @@ public class SwipeFragment extends Fragment {
     }
 
     private void updateAdapter() {
-        if (profilesToSwipe.size() != 0) {///FIXXXX
+        if (profilesToSwipe.size() != 0) {
             currentProfileToSwipe = profilesToSwipe.pop();
         } else {
             // instead add empty card
             currentProfileToSwipe = createEmptyProfileForAdapter();
+            outOfSinglesMessage.setText(R.string.out_of_singles);
         }
 
         swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
@@ -184,9 +229,9 @@ public class SwipeFragment extends Fragment {
             }, FETCH_PROFILE_WAIT_TIME_MS);
         } else {
             profilesToSwipe = matchService.getSwipeableProfiles();
+            outOfSinglesMessage.setText("");
             if (profilesToSwipe.size() == 0) {
-                TextView outOfSingles = getView().findViewById(R.id.textView_main_swipe_no_swipes);
-                outOfSingles.setText(R.string.out_of_singles);
+                outOfSinglesMessage.setText(R.string.out_of_singles);
             }
             updateAdapter();
         }
