@@ -15,6 +15,7 @@ import android.os.IBinder;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.fragments.MatchesFragment;
 import smap.gr15.appproject.tendr.fragments.SwipeFragment;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.services.MatchService;
@@ -39,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
+
+    private MatchesFragment matchesFragment;
+    private final String FRAGMENT_MATCHES = "fragment_matches";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,13 +71,23 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
     }
 
+    private void setupMatchesFragment(){
+        matchesFragment = new MatchesFragment(matchService);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
+                .commit();
+    }
+
 
     private void setupConnectionToMatchService() {
         matchServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
-                createSwipeFragment();
+                //createSwipeFragment();
+                setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
             }
 

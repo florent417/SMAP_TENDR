@@ -114,6 +114,10 @@ public class MatchService extends Service {
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
     }
 
+    public List<Profile> getSuccessFullMatches(){
+        return successfulMatches;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Create notification channel
@@ -177,6 +181,10 @@ public class MatchService extends Service {
         // create wantedMatches
         // create unwantedMatches
         //  other collections we find we will need
+    }
+
+    private void checkProfileIsInitInDB() {
+
     }
 
     private void updateSwipeQueueIfNeeded() {
