@@ -96,7 +96,6 @@ public class ProfileActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    //region Profile Service Connection
     private void setupProfileServiceConnection(){
         startService(new Intent(ProfileActivity.this, ProfileService.class));
         setupConnectionToProfileService();
@@ -225,6 +224,9 @@ public class ProfileActivity extends AppCompatActivity {
             progressDialog.show();
 
             Uri filePath = data.getData();
+
+            Log.d("image", filePath.toString());
+            Log.d("service", profileService.toString());
             profileService.uploadPhoto(filePath, userProfileOperationsListener);
         }
     }
