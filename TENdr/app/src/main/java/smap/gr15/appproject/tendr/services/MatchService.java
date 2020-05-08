@@ -1,28 +1,67 @@
 package smap.gr15.appproject.tendr.services;
+import smap.gr15.appproject.tendr.activities.ChatActivity;
+import smap.gr15.appproject.tendr.activities.MainActivity;
+import smap.gr15.appproject.tendr.models.ChatMessage;
+import smap.gr15.appproject.tendr.models.ConversationNotification;
+import smap.gr15.appproject.tendr.utils.Globals;
 
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import smap.gr15.appproject.tendr.R;
+import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.models.ProfileList;
+
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_CHAT_COLLECTION;
+import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_REFERENCE;
+import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
+import static smap.gr15.appproject.tendr.utils.Globals.FRAGMENT;
+import static smap.gr15.appproject.tendr.utils.Globals.FRAGMENT_MATCH;
+import static smap.gr15.appproject.tendr.utils.Globals.comparedUser;
+import static smap.gr15.appproject.tendr.utils.Globals.firstUser;
+import static smap.gr15.appproject.tendr.utils.Globals.secondUser;
 
 public class MatchService extends Service {
     private final String LOG = "MatchService LOG";
@@ -33,13 +72,26 @@ public class MatchService extends Service {
     private int PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE = 20;
     private int UNWANTED_MATCHES_LIMIT = 100;
     private int WANTED_MATCHES_LIMIT = 100;
+    private boolean successfulMatchesFetched = false;
+    private boolean wantedMatchesFetched = false;
+    private boolean unwantedMatchesFetched = false;
+    private boolean swipeableProfilesFetched = false;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
     private ProfileList wantedMatches;
     private ProfileList unwantedMatches;
-    private List<Profile> successfulMatches = new ArrayList<Profile>();
+    private ArrayList<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+    public static final String NOTIFICATIONS_ID = "NOTIFICATIONS_ID";
+    public static final String NOTIFICATIONS_NAME = "NOTIFICATIONS_NAME";
+    public static final Integer NOTIFICATIONS_ID_INTEGER = 1;
+    private ExecutorService notificationsExecutor;
+    private NotificationManagerCompat notificationManagerCompat;
+    private List<ConversationNotification> ConversationNotification = new ArrayList<>();
+    private FirebaseAuth Auth;
+    private static ListenerRegistration registrationlist;
+    private static ListenerRegistration registrationNewMatch;
+    private List<String> numberOfMatches = new ArrayList<>();
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -58,20 +110,25 @@ public class MatchService extends Service {
         super.onCreate();
         Log.d(LOG, "MatchService has been created");
 
+        Auth = FirebaseAuth.getInstance();
 
-        /* for debugging purposes
         fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
-        fetchOwnProfileData("alexboi@mail.dk");//("alexander8@hotmail.com"); // maybe there's firebase method for getting own id
-        createProfileInDB(new Profile("xXx", "AlexBoi", 26, "Student",
-                "Aarhus", "Denmark", "male", "alexboi@mail.dk", "admin"));
-        */
+    }
 
+    public List<Profile> getSuccessFullMatches(){
+        return successfulMatches;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Create notification channel
+
+        // Message notifications
+        setupNewMessageNotifications();
+        updateNewMessageNotifications();
+
         return super.onStartCommand(intent, flags, startId);
+
 
         // return START_STICKY
     }
@@ -79,17 +136,28 @@ public class MatchService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        registrationlist.remove();
+        registrationNewMatch.remove();
         Log.d(LOG, "MatchService has been destroyed");
+    }
+
+    public boolean serviceIsInit() {
+        return successfulMatchesFetched && wantedMatchesFetched && unwantedMatchesFetched && swipeableProfilesFetched;
     }
 
     // Should perhaps also have a broadcast method. Activities can get all matches at startup, and
     // should instantly get updated if a new match happens
-    public List<Profile> getMatches() {
+    public ArrayList<Profile> getMatches() {
         return successfulMatches;
     }
 
-    public List<Profile> getSwipeableProfiles() {
+    public LinkedList<Profile> getSwipeableProfiles() {
+        // return profiles, then empty and get new profiles
+
+        if (swipeableProfiles.size() == 0 && ownProfile != null) {
+                updateSwipeQueueIfNeeded();
+        }
+
         return swipeableProfiles;
     }
 
@@ -114,6 +182,10 @@ public class MatchService extends Service {
         // create wantedMatches
         // create unwantedMatches
         //  other collections we find we will need
+    }
+
+    private void checkProfileIsInitInDB() {
+
     }
 
     private void updateSwipeQueueIfNeeded() {
@@ -153,15 +225,25 @@ public class MatchService extends Service {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d(LOG, "DocumentSnapshot data: " + document.getData());
-                        wantedMatches = document.toObject(ProfileList.class); // what if null??
+                        wantedMatches = document.toObject(ProfileList.class);
+                        wantedMatchesFetched = true;
                     } else {
                         Log.d(LOG, "No such document");
+                        wantedMatchesFetched = true;
                     }
                 } else {
                     Log.d(LOG, "get failed with ", task.getException());
+                    wantedMatchesFetched = true;
                 }
             }
         });
+    }
+
+    private void fetchUnwantedMatches(String userId) {
+        // fetch code
+
+
+        unwantedMatchesFetched = true;
     }
 
     private void fetchOwnProfileData(String profileKey) {
@@ -176,7 +258,7 @@ public class MatchService extends Service {
                         ownProfile = document.toObject(Profile.class);
                         fetchSuccessfulMatches(ownProfile.getMatches());
                         fetchWantedMatches(ownProfile.getUserId());
-//                        fetchUnwantedMatches(ownProfile.getUserId());
+                        fetchUnwantedMatches(ownProfile.getUserId());
                         fetchProfilesForSwiping(ownProfile);
                     } else {
                         Log.d(LOG, "No such document");
@@ -192,9 +274,10 @@ public class MatchService extends Service {
     // query takes, rather it's the size of the data the query returns. Bandwith is the limiting factor.
     // Source: https://medium.com/firebase-developers/why-is-my-cloud-firestore-query-slow-e081fb8e55dd
     private void fetchSuccessfulMatches(List<String> matchIds) {
+        successfulMatchesFetched = true;
         if (!matchIds.isEmpty()) {
             db.collection(PROFILES_DB)
-                    .whereIn("email", matchIds)
+                    .whereIn("userId", matchIds)
                     .limit(MATCH_LIMIT)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -207,8 +290,10 @@ public class MatchService extends Service {
                                     Profile matchedProfile = document.toObject(Profile.class);
                                     successfulMatches.add(matchedProfile);
                                 }
+                                successfulMatchesFetched = true;
                             } else {
                                 Log.d(LOG, "Error getting documents: ", task.getException());
+                                successfulMatchesFetched = true;
                             }
                         }
                     });
@@ -217,7 +302,7 @@ public class MatchService extends Service {
 
     // Currently has no smart algorithme to prefer people of same city, only matches base on same country
     private void fetchProfilesForSwiping(Profile ownProfiles) {
-        db.collection(PROFILES_DB)// Agree with team that we should only use profiles collection, and not also matches, it's same data
+        db.collection(PROFILES_DB)
                 .whereEqualTo("country", ownProfiles.getCountry())
                 .whereArrayContains("genderPreference", ownProfiles.getGender())
                 .limit(PROFILES_TO_FETCH_FOR_SWIPING_AT_ONCE)
@@ -231,7 +316,7 @@ public class MatchService extends Service {
                                 Profile swipeableProfile = document.toObject(Profile.class);
                                 swipeableProfiles.add(swipeableProfile);
                             }
-                            int i = 1;
+                            swipeableProfilesFetched = true;
                         } else {
                             Log.d(LOG, "Error getting documents: ", task.getException());
                         }
@@ -239,5 +324,290 @@ public class MatchService extends Service {
                 });
 
     }
+
+    private void setupNewMessageNotifications()
+    {
+        notificationManagerCompat = NotificationManagerCompat.from(this);
+
+        setupChannel();
+
+        Notification notification = setupNotificationsCombat("Welcome to TENdr","Here you will receive new messages");
+
+        notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+
+        startForeground(NOTIFICATIONS_ID_INTEGER, notification);
+    }
+
+    private void setupChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) { //needed because channels are not supported on older versions
+
+            Log.d("IM IN SETUP" , "SETUP");
+
+            NotificationChannel mChannel = new NotificationChannel(NOTIFICATIONS_ID,
+                    NOTIFICATIONS_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT);
+
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+    }
+
+    private Notification setupNotificationsCombat(String title, String text)
+    {
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+
+        Log.d("IM IN SETCOMBAT", "COMBAT");
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
+                .build();
+    }
+
+    private Notification setupNotificationsCombat(String title, String text, String matchUid)
+    {
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("ConversationKey", matchUid);
+
+
+        // Whoever reads this, i spend 2 hours fixing FLAG_UPDATE_CURRENT, because of caching - Now i will go out in the sun and get an ice cream.
+        // In order to fix this, i had to make over 10 logs and my head was about to explode
+        // Then i went to the fridge to get some nice to eat, and guess what, it was fucking empty. Then finally, stackoverflow came to my rescue. Thank you Sagar from StackOverflow
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, intent, FLAG_UPDATE_CURRENT);
+
+        Log.d("IM IN SETCOMBAT", "COMBAT");
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
+                .build();
+    }
+
+    //Used on New Match
+    private Notification setupNotificationsCombat(){
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(FRAGMENT, FRAGMENT_MATCH);
+
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, intent, FLAG_UPDATE_CURRENT);
+
+        String title = "You have a new Match";
+        String text = "Don't let your match wait too long!";
+
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
+                .build();
+    }
+
+    private void updateNewMessageNotifications()
+    {
+        if(notificationsExecutor == null)
+        {
+            notificationsExecutor = Executors.newSingleThreadExecutor();
+        }
+
+        notificationsExecutor.submit(UpdateNotificationsThread);
+    }
+
+    private Runnable UpdateNotificationsThread = new Runnable(){
+
+        @Override
+        public void run() {
+            populateConversationList();
+            setupMatchNotificationListener();
+        }
+    };
+
+    private void populateConversationList(){
+        String myUserId = Auth.getUid();
+
+        //Get collections where the user is involved
+        db.collection(CONVERSATION_REFERENCE).whereEqualTo(firstUser, myUserId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    List<ConversationNotification> tempConversation = new ArrayList<>();
+
+                    tempConversation = task.getResult().toObjects(ConversationNotification.class);
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+
+                    for (int i = 0; i < tempConversation.size(); i++)
+                    {
+                        String key = documentSnapshots.get(i).getId();
+                        tempConversation.get(i).setDocKey(key);
+
+                        ConversationNotification.add(tempConversation.get(i));
+
+                        Log.d("sizeOf", String.valueOf(ConversationNotification.size()));
+                        Log.d("key", ConversationNotification.get(i).getDocKey());
+                        setupConversationSnapshotListener(key);
+                    }
+                }
+            }
+        });
+
+        db.collection(CONVERSATION_REFERENCE).whereEqualTo(secondUser, myUserId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    List<ConversationNotification> tempConversation = new ArrayList<>();
+                    tempConversation = task.getResult().toObjects(ConversationNotification.class);
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+
+                    for (int i = 0; i < tempConversation.size(); i++)
+                    {
+                        String key = documentSnapshots.get(i).getId();
+                        tempConversation.get(i).setDocKey(key);
+                        ConversationNotification.add(tempConversation.get(i));
+
+                        Log.d("sizeOf", String.valueOf(ConversationNotification.size()));
+                        Log.d("key", ConversationNotification.get(i).getDocKey());
+                        setupConversationSnapshotListener(key);
+                    }
+
+                }
+            }
+        });
+
+
+    }
+
+    private void setupConversationSnapshotListener(String key)
+    {
+        CollectionReference documentReference = db.collection(CONVERSATION_REFERENCE).document(key).collection(CONVERSATION_CHAT_COLLECTION);
+        registrationlist = documentReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+
+                if (e != null) {
+                    Log.w("Error", "listen:error", e);
+                    return;
+                }
+
+                ChatMessage doc = queryDocumentSnapshots.getDocumentChanges().get(0).getDocument().toObject(ChatMessage.class);
+
+                String id = getMatchUserUid(key);
+
+                Log.d("idd", id);
+
+
+                // Ehh I read on stackoverflow that this was the only way to not get the first event on initial call: https://stackoverflow.com/questions/47601038/disable-the-first-query-snapshot-when-adding-a-snapshotlistener
+                // It is not pretty though :()
+                // || id.equals(ownProfile.getUserId())
+                Log.d("docc", doc.getSender());
+                if(doc.getTimeStamp().compareTo(new Date(System.currentTimeMillis() - 30000L)) < 0 || id.equals(ownProfile.getUserId()) || isChatActivityTopActivity())
+                {
+                    Log.d("reutrning", "return");
+                    return;
+                }
+
+                Log.d("reutrnings", "returns");
+
+                Notification notification;
+
+                if(id.equals(""))
+                {
+                    notification = setupNotificationsCombat(doc.getSender(), doc.getMessage());
+                }
+                else{
+                    Log.d("matchuid", id);
+                    notification = setupNotificationsCombat(doc.getSender(), doc.getMessage(), id);
+                }
+
+
+                notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+            }
+        });
+
+
+    }
+
+    private String getMatchUserUid(String key)
+    {
+        //find key
+        for( ConversationNotification c : ConversationNotification)
+        {
+            if(c.getDocKey().equals(key))
+            {
+                if(!c.getFirstUserId().equals(Auth.getUid()))
+                    return c.getFirstUserId();
+                else{
+                    return c.getSecondUserId();
+                }
+            }
+        }
+
+        return "";
+    }
+
+    //https://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android/13994622
+    private boolean isChatActivityTopActivity()
+    {
+        boolean isTop = false;
+        String chatActivity = ".activities.ChatActivity";
+
+        ActivityManager am = (ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+
+        Log.d("topactivity", cn.getShortClassName());
+
+        if(cn.getShortClassName().equals(chatActivity))
+            isTop = true;
+
+
+        return isTop;
+
+    }
+
+    private void setupMatchNotificationListener()
+    {
+        DocumentReference doc = db.collection(FIREBASE_Profiles_PATH).document(Auth.getUid());
+
+        registrationNewMatch = doc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+
+                Profile profile = documentSnapshot.toObject(Profile.class);
+
+                if(numberOfMatches.isEmpty())
+                {
+                    Log.d("numberOfMatchesempty", "isempty");
+                    numberOfMatches = profile.getMatches();
+                    return;
+                }
+
+                if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
+                {
+                    numberOfMatches = profile.getMatches();
+                    Notification notification;
+                    notification = setupNotificationsCombat();
+                    notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+                }
+            }
+        });
+    }
+
+
+
 
 }

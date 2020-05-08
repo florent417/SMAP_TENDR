@@ -13,4 +13,148 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ScrollView
+        android:id="@+id/ScrollViewSettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_auth_toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/ProfilePreference"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <CheckedTextView
+                android:id="@+id/ShowMeFemale"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+                android:checked="false"
+                android:text="@string/female"
+                android:textSize="20sp" />
+
+            <CheckedTextView
+                android:id="@+id/ShowMeMale"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+                android:checked="false"
+                android:text="@string/male"
+                android:textSize="20sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/location"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/LocationCountryOfResidence"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/country_of_residence"
+                android:inputType="textNoSuggestions"
+                />
+
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/City"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/CityCityOfResidence"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/city_of_residence"
+                android:inputType="textNoSuggestions" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/Occupation"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/OccupationOccupation"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/what_s_your_occupation"
+                android:inputType="textNoSuggestions" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <Button
+                android:id="@+id/applyButtonSettings"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorButtons"
+                android:text="@string/apply"
+                android:textColor="@color/colorButtonsText"
+
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+
+
+
+
+            <Button
+                android:id="@+id/buttonSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/colorButtons"
+                android:text="@string/sign_out"
+                android:textColor="@color/colorButtonsText" />
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,23 +18,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
-
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import android.widget.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,7 +31,6 @@ import smap.gr15.appproject.tendr.services.ProfileService;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.adapters.ProfileImageAdapter;
 import smap.gr15.appproject.tendr.models.Profile;
-import smap.gr15.appproject.tendr.utils.Globals;
 
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
@@ -104,6 +90,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     // When cancellation of picture choice happens
     // the connection is turned off, therefore we need to reconnect
+    /*
     @Override
     protected void onResume() {
         super.onResume();
@@ -116,6 +103,16 @@ public class ProfileActivity extends AppCompatActivity {
         unbindService(profileServiceConnection);
         profileServiceBound = false;
         super.onStop();
+    }
+
+     */
+
+    @Override
+    protected void onDestroy() {
+        profileService = null;
+        unbindService(profileServiceConnection);
+        profileServiceBound = false;
+        super.onDestroy();
     }
 
     private void setupProfileServiceConnection(){
@@ -211,6 +208,7 @@ public class ProfileActivity extends AppCompatActivity {
             progressDialog.setTitle("Deleting image...");
             progressDialog.show();
 
+
             // TODO: Maybe work on the urls on the profile urls
             String imageUrl = imgUrls.get(position);
             profileService.deletePhoto(imageUrl, userProfileOperationsListener);
@@ -235,6 +233,8 @@ public class ProfileActivity extends AppCompatActivity {
 
             Uri filePath = data.getData();
 
+            Log.d("image", filePath.toString());
+            Log.d("service", profileService.toString());
             profileService.uploadPhoto(filePath, userProfileOperationsListener);
         }
     }

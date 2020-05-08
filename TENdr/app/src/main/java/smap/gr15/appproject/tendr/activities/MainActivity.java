@@ -6,28 +6,28 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageButton;
 import android.os.IBinder;
-import android.util.Log;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import smap.gr15.appproject.tendr.R;
-import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.fragments.MatchesFragment;
+import smap.gr15.appproject.tendr.fragments.SwipeFragment;
 import smap.gr15.appproject.tendr.utils.helpers;
 import smap.gr15.appproject.tendr.services.MatchService;
 
+// Implementation of swipe fragment based on: https://developer.android.com/training/animation/screen-slide-2
 public class MainActivity extends AppCompatActivity {
     private ServiceConnection matchServiceConnection;
     private MatchService matchService;
     private boolean matchServiceBound;
     private final String LOG = "MainActivity";
+    private final String SWIPE_FRAGMENT = "SwipeFragment";
+    private SwipeFragment swipeFragment;
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -40,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
+
+    private MatchesFragment matchesFragment;
+    private final String FRAGMENT_MATCHES = "fragment_matches";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +62,32 @@ public class MainActivity extends AppCompatActivity {
         bindToMatchService();
     }
 
+    private void createSwipeFragment() {
+        //if (getApplicationContext().savedInstanceState == null) {
+            swipeFragment = new SwipeFragment(matchService);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
+                    .commit();
+    }
+
+    private void setupMatchesFragment(){
+        matchesFragment = new MatchesFragment(matchService);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
+                .commit();
+    }
+
+
     private void setupConnectionToMatchService() {
         matchServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
-    ///         getAndDisplayAllWords();
+                //createSwipeFragment();
+                setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
             }
 
@@ -82,8 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
-
-
 
     private void bindToMatchService() {
         if (!matchServiceBound) {
