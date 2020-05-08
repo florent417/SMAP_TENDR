@@ -3,6 +3,7 @@ package smap.gr15.appproject.tendr.models;
 import java.util.Date;
 
 public class ChatMessage {
+
     private String message;
     private String sender;
     private Date timeStamp;
@@ -42,5 +43,6 @@ public class ChatMessage {
     public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
     }
-    // Dont send gifs and pictures
+
+
 }
