@@ -12,6 +12,9 @@ public class Globals {
     public static String secondUser = "secondUserId";
     public static String comparedUser = "combinedUserUid";
     public static String CONVERSATION_CHAT_COLLECTION = "chatMessages";
+    public static String FRAGMENT = "fragment";
+    public static Integer FRAGMENT_MATCH = 1;
+    public static Integer FRAGMENT_SWIPE = 0;
 
 
 }
