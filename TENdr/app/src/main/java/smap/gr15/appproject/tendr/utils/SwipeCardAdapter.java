@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 import smap.gr15.appproject.tendr.R;
@@ -27,7 +29,7 @@ public class SwipeCardAdapter extends RecyclerView.Adapter<SwipeCardAdapter.Swip
                 super(itemView);
                 nameAndAge = itemView.findViewById(R.id.textView_main_swipe_name_age);
                 bio = itemView.findViewById(R.id.textView_main_swipe_bio);
-                // profilePicture =
+                profilePicture = itemView.findViewById(R.id.imageView_main_swipe);
             }
         }
 
@@ -49,10 +51,25 @@ public class SwipeCardAdapter extends RecyclerView.Adapter<SwipeCardAdapter.Swip
             if (profile != null) {
                 holder.nameAndAge.setText(profile.getFirstName() + ", " + profile.getAge());
                 holder.bio.setText(profile.getBio());
+                fetchProfilePicture(holder);
             } else {
                 holder.itemView.setVisibility(View.GONE);
                 holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
             }
+        }
+
+        private void fetchProfilePicture(SwipeCardViewHolder holder) {
+            //Profile currentProfile = matchedProfiles.get(position);
+            String firstProfilePictureUrl=null;
+            if (profile.getPictures() != null && profile.getPictures().size() > 0) {
+                firstProfilePictureUrl = profile.getPictures().get(0);
+            }
+
+            Picasso.get()
+                    .load(firstProfilePictureUrl)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .into(holder.profilePicture);
+            // profilePicture =
         }
 
         @Override
