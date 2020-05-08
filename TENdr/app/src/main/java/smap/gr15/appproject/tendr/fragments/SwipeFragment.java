@@ -22,24 +22,19 @@ import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.services.MatchService;
 import smap.gr15.appproject.tendr.utils.SwipeCardAdapter;
 
-public class SwipeFragment extends Fragment implements View.OnClickListener {
-    // REMOVE ?? Implement swipe fragment using: https://developer.android.com/training/animation/screen-slide-2#viewpager
+public class SwipeFragment extends Fragment {
     // Implement swipe fragment using: https://stackoverflow.com/questions/34620840/how-to-add-swipe-functionality-on-android-cardview
     // and: https://stackoverflow.com/questions/27293960/swipe-to-dismiss-for-recyclerview/30601554#30601554
     private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private final String LOG = "SwipeFragment";
-    private View.OnClickListener mListener;
     private LinkedList<Profile> profilesToSwipe;
     private Profile currentProfileToSwipe;
     private MatchService matchService;
     private RecyclerView swipeRecyclerView;
     private RecyclerView.Adapter swipeAdapter;
     private RecyclerView.LayoutManager swipeLayoutManager;
-    public Button yesButton;
-    public Button noButton;
     private TextView outOfSinglesMessage;
-    //private view
 
     public SwipeFragment(MatchService matchService) {
         this.matchService = matchService;
@@ -62,60 +57,9 @@ public class SwipeFragment extends Fragment implements View.OnClickListener {
         setupRecyclerView();
     }
 
-    @Override
-    public void onClick(View v) {
-
-        Log.d(LOG, "a button clicked");
-        switch(v.getId()){
-            case R.id.button_main_fragment_yes:
-
-                Log.d(LOG, "yesButton clicked");
-                swipeRight();
-                break;
-            case R.id.button_main_fragment_no:
-                Log.d(LOG, "noButton clicked");
-                swipeLeft();
-                break;
-            default:
-                Log.d(LOG, "what Button clicked");
-                break;
-        }
-    }
-
     private void setupView(View view) {
-        yesButton = (Button) view.findViewById(R.id.button_main_fragment_yes);
-        noButton = (Button) view.findViewById(R.id.button_main_fragment_no);
         outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
-
-        /*final Button notButton = (Button) view.findViewById(R.id.button_main_fragment_no);
-        notButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                Log.d(LOG, "what Button clicked");
-            }
-        });*/
-
-        noButton.setOnClickListener(this);
-        yesButton.setOnClickListener(this);
-
-       /* noButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //setupRecycler
-                Log.d(LOG, "noButton clicked");
-                swipeLeft();
-            }
-        });
-
-        yesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(LOG, "yesButton clicked");
-                swipeRight();
-            }
-        });*/
     }
-
 
     private void setupRecyclerView() {
         swipeRecyclerView = getView().findViewById(R.id.main_swipe_card);
@@ -145,33 +89,6 @@ public class SwipeFragment extends Fragment implements View.OnClickListener {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchHelper);
         itemTouchHelper.attachToRecyclerView(swipeRecyclerView);
     }
-
-
-    /*private void setViewPager() {
-        viewPager = getView().findViewById(R.id.main_swipe_card);
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.d(LOG, "position: " + position + " positionOffset: " + positionOffset);
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (position > lastSwipeCardPosition) {
-                    swipeLeft(lastSwipeCardPosition);
-                } else if (position < lastSwipeCardPosition) {
-                    swipeRight(lastSwipeCardPosition);
-                }
-                lastSwipeCardPosition = position; // update
-
-                swipedProfiles.add(profilesToSwipe.get(position));
-
-                super.onPageSelected(position);
-                String Br = "BR";
-            }
-        });
-    }*/
 
     public void swipeRight() {
         String tempUserId = currentProfileToSwipe.getUserId();
@@ -204,7 +121,6 @@ public class SwipeFragment extends Fragment implements View.OnClickListener {
         if (profilesToSwipe.size() != 0) {
             currentProfileToSwipe = profilesToSwipe.pop();
         } else {
-            // instead add empty card
             currentProfileToSwipe = createEmptyProfileForAdapter();
             outOfSinglesMessage.setText(R.string.out_of_singles);
         }
