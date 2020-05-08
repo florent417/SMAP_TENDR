@@ -35,13 +35,7 @@ public class SwipeCardFragment extends Fragment {
         TextView bio = getView().findViewById(R.id.textView_main_swipe_bio);
 
         nameAndAge.setText(mergeNameAndAge(profile.getFirstName(), profile.getAge()));
-
-
-
-
-        /*       viewPager = getView().findViewById(R.id.main_swipe_card);
-        swipeAdapter = new SwipeFragment.SwipePagerAdapter(this);
-        viewPager.setAdapter(swipeAdapter);*/
+        bio.setText(profile.getBio());
     }
 
     private String mergeNameAndAge(String name, int age) {

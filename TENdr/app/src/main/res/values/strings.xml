@@ -21,4 +21,6 @@
     <string name="profile_pic_description">Profile Picture</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="out_of_singles">"We're sadly out of singles in your area :("</string>
+    <string name="empty_string"> </string>
 </resources>

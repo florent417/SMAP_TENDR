@@ -27,7 +27,7 @@ public class SwipePagerAdapter extends FragmentStateAdapter {
     // a profile from at list i guess.
     @Override
     public Fragment createFragment(int position) {
-        return new SwipeCardFragment(swipeableProfiles.getFirst());
+        return new SwipeCardFragment(swipeableProfiles.get(position));
     }
 
     @Override

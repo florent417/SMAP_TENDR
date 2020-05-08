@@ -124,6 +124,10 @@ public class MatchService extends Service {
         //  other collections we find we will need
     }
 
+    private void checkProfileIsInitInDB() {
+
+    }
+
     private void updateSwipeQueueIfNeeded() {
         if (swipeableProfiles.size() <= 10) {
             fetchProfilesForSwiping(ownProfile);
