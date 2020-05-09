@@ -709,12 +709,16 @@ public class MatchService extends Service {
                     return;
                 }
 
+                //You cannot remove matches in current version
                 if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
                 {
                     numberOfMatches = profile.getMatches();
                     Notification notification;
                     notification = setupNotificationsCombat();
                     notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+
+                    //Create conversation
+
                 }
             }
         });
