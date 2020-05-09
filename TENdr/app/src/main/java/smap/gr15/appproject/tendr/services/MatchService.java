@@ -25,6 +25,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -38,6 +40,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +115,7 @@ public class MatchService extends Service {
 
         Auth = FirebaseAuth.getInstance();
 
-        fetchOwnProfileData(FirebaseAuth.getInstance().getUid());
+        fetchOwnProfileData(Auth.getUid());
     }
 
     public List<Profile> getSuccessFullMatches(){
@@ -154,38 +157,122 @@ public class MatchService extends Service {
     public LinkedList<Profile> getSwipeableProfiles() {
         // return profiles, then empty and get new profiles
 
-        if (swipeableProfiles.size() == 0 && ownProfile != null) {
+        if (swipeableProfiles.size() < 2 && ownProfile != null) {
                 updateSwipeQueueIfNeeded();
         }
 
         return swipeableProfiles;
     }
 
-    public void swipeNo(Profile noThanksProfile) {
-        swipeableProfiles.remove(noThanksProfile);
+    public Profile getOwnProfile() {
+        return ownProfile;
+    }
 
-        addProfileToUnwantedMatches(noThanksProfile);
-
+    public void swipeNo(String noThanksUserId) {
+        addProfileToUnwantedMatches(noThanksUserId);
         updateSwipeQueueIfNeeded();
     }
 
-    public void swipeYes(Profile yesPleaseProfile) {
-        swipeableProfiles.remove(yesPleaseProfile);
-
-        addProfileToWantedMatches(yesPleaseProfile);
-
+    public void swipeYes(String yesPleaseUserId) {
+        addProfileToWantedMatches(yesPleaseUserId);
         updateSwipeQueueIfNeeded();
+
+        // Check for match! here
+        checkForMatch(yesPleaseUserId);
     }
+
+    private void checkForMatch(String wantedMatchUserId) {
+        db.collection(WANTED_MATCHES_DB)
+                .whereEqualTo("userId", wantedMatchUserId)
+                .limit(1)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(LOG, "Fetching wanted matches list of wanted match: " + document.getId() + " => " + document.getData());
+                                ProfileList wantedMatchesOfWantedMatch = document.toObject(ProfileList.class);
+                                for (String userIdOfWantedMatchWantedList : wantedMatchesOfWantedMatch.list){
+                                    if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
+                                        createMatchIfWithinLimit(wantedMatchUserId);
+                                    }
+                                }
+                            }
+                        } else {
+                            Log.d(LOG, "Error getting wanted matches list documents of wanted match: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+    private void createMatchIfWithinLimit(String userIdOfMatch) {
+        if (ownProfile.getMatches().size() < 10) {
+            db.collection(PROFILES_DB).document(userIdOfMatch)
+                    .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Log.d(LOG, "DocumentSnapshot data: " + document.getData());
+                            Profile matchProfile = document.toObject(Profile.class);
+                            if (matchProfile != null && matchProfile.getMatches().size() < 10) {
+                                // updating other persons matches
+                                if (matchProfile.getMatches() == null) {
+                                    matchProfile.setMatches(new ArrayList<String>());
+                                }
+                                List<String> otherPersonsMatches = matchProfile.getMatches();
+                                otherPersonsMatches.add(Auth.getUid());
+                                matchProfile.setMatches(otherPersonsMatches);
+                                updateProfileInDB(matchProfile);
+
+                                // adding other person to own matchlist
+                                List<String> ownMatches = ownProfile.getMatches();
+                                ownMatches.add(matchProfile.getUserId());
+                                ownProfile.setMatches(ownMatches);
+                                updateProfileInDB(ownProfile);
+                            }
+
+                        } else {
+                            Log.d(LOG, "No such document");
+                        }
+                    } else {
+                        Log.d(LOG, "get failed with ", task.getException());
+                    }
+                }
+            });
+
+        }
+    }
+
+    private void checkAmountAndUpdateMatchList(String userId) {
+        // check for only 10, otherwise don't update
+    }
+
+    private void updateProfileInDB(Profile profile) {
+        db.collection(PROFILES_DB).document(profile.getUserId())
+                .set(profile, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(LOG, "profiles DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(LOG, "Error writing document profiles", e);
+                    }
+                });
+    }
+
 
     public void createProfileInDB(Profile profile) {
         // create Profile
-        // create wantedMatches
-        // create unwantedMatches
+        updateWantedListInDB(new ProfileList(profile.getUserId()));
+        updateUnwantedListInDB(new ProfileList(profile.getUserId()));
         //  other collections we find we will need
-    }
-
-    private void checkProfileIsInitInDB() {
-
     }
 
     private void updateSwipeQueueIfNeeded() {
@@ -194,56 +281,76 @@ public class MatchService extends Service {
         }
     }
 
-    private void addProfileToUnwantedMatches(Profile profile) {
-        unwantedMatches.list.add(profile.getUserId());
+    private void addProfileToUnwantedMatches(String userId) {
+        unwantedMatches.list.add(userId);
         if (unwantedMatches.list.size() >= UNWANTED_MATCHES_LIMIT)
         {
             unwantedMatches.list.remove(unwantedMatches.list.size());
-
-            // Update database with data. Remove just the one instead of sending whole list of 100
         }
-        // Update database with data of just the 1 new person
+        updateUnwantedListInDB(unwantedMatches);
     }
 
-    private void addProfileToWantedMatches(Profile profile) {
-        wantedMatches.list.add(profile.getUserId());
+    private void addProfileToWantedMatches(String userId) {
+        wantedMatches.list.add(userId);
         if (wantedMatches.list.size() >= WANTED_MATCHES_LIMIT)
         {
             wantedMatches.list.remove(wantedMatches.list.size());
-            // Update database with data. Remove just the one instead of sending whole list of 100
         }
 
-        // Update database with data of just the 1 new person
+        updateWantedListInDB(wantedMatches);
     }
 
     private void fetchWantedMatches(String userId) {
-        db.collection(WANTED_MATCHES_DB).document(userId)
-                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d(LOG, "DocumentSnapshot data: " + document.getData());
-                        wantedMatches = document.toObject(ProfileList.class);
-                        wantedMatchesFetched = true;
-                    } else {
-                        Log.d(LOG, "No such document");
-                        wantedMatchesFetched = true;
+        db.collection(WANTED_MATCHES_DB)
+                .whereEqualTo("userId", userId)
+                .limit(1)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(LOG, "Fetching wanted matches list item: " + document.getId() + " => " + document.getData());
+                                wantedMatches = document.toObject(ProfileList.class);
+                            }
+                            if (wantedMatches == null) {
+                                updateWantedListInDB(new ProfileList(Auth.getUid())); // Should probably remove in release
+                            }
+                            wantedMatchesFetched = true;
+                        } else {
+                            Log.d(LOG, "Error getting wanted matches list documents: ", task.getException());
+                            updateWantedListInDB(new ProfileList(Auth.getUid())); // Should probably remove in release
+                            wantedMatchesFetched = true;
+                        }
                     }
-                } else {
-                    Log.d(LOG, "get failed with ", task.getException());
-                    wantedMatchesFetched = true;
-                }
-            }
-        });
+                });
     }
 
     private void fetchUnwantedMatches(String userId) {
-        // fetch code
+        db.collection(UNWANTED_MATCHES_DB)
+                .whereEqualTo("userId", userId)
+                .limit(1)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(LOG, document.getId() + " => " + document.getData());
+                                unwantedMatches = document.toObject(ProfileList.class);
+                            }
+                            if (unwantedMatches == null) {
+                                updateUnwantedListInDB(new ProfileList(Auth.getUid())); // Should probably remove in release
+                            }
+                            unwantedMatchesFetched = true;
+                        } else {
+                            Log.d(LOG, "Error getting documents: ", task.getException());
+                            updateUnwantedListInDB(new ProfileList(Auth.getUid())); // Should probably remove in release
+                            unwantedMatchesFetched = true;
+                        }
 
-
-        unwantedMatchesFetched = true;
+                    }
+                });
     }
 
     private void fetchOwnProfileData(String profileKey) {
@@ -609,5 +716,45 @@ public class MatchService extends Service {
 
 
 
+    private void updateUnwantedListInDB(ProfileList unwantedList) {
+        String userId = Auth.getUid();
+
+        db.collection(UNWANTED_MATCHES_DB).document(userId)
+                .set(unwantedList, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(LOG, "UnwantedList DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(LOG, "Error writing document UnwantedList", e);
+                    }
+                });
+
+    }
+
+
+    private void updateWantedListInDB(ProfileList wantedList) {
+        String userId = Auth.getUid();
+
+        db.collection(WANTED_MATCHES_DB).document(userId)
+                .set(wantedList, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(LOG, "WantedList DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(LOG, "Error writing document WantedList", e);
+                    }
+                });
+
+    }
 
 }

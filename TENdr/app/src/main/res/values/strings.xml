@@ -44,4 +44,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="out_of_singles">"We're sadly out of singles in your area :("</string>
     <string name="empty_string"> </string>
+    <string name="too_many_matches">You have reached the limit on the amount of matches you\'re allowed.
+    \nPlease remove a match to get a new match.</string>
 </resources>

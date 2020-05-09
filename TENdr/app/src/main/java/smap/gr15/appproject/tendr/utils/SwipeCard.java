@@ -14,13 +14,12 @@ public class SwipeCard extends CardView {
         initialize(context);
     }
 
-    public SwipeCard(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public SwipeCard(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
         initialize(context);
     }
 
     private void initialize(Context context){
         LayoutInflater.from(context).inflate(R.layout.fragment_swipe_card, this);
-        // ImageView imageView = (ImageView)getView.findViewById(...);
     }
 }

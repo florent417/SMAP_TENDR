@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.os.IBinder;
 
@@ -62,13 +63,13 @@ public class MainActivity extends AppCompatActivity {
         bindToMatchService();
     }
 
-    private void createSwipeFragment() {
-        //if (getApplicationContext().savedInstanceState == null) {
-            swipeFragment = new SwipeFragment(matchService);
+    private void setupSwipeFragment() {
+        swipeFragment = new SwipeFragment(matchService);
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
-                    .commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
+                .commit();
     }
 
     private void setupMatchesFragment(){
@@ -86,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
-                //createSwipeFragment();
-                setupMatchesFragment();
+                setupSwipeFragment();
+                // create at method that reacts to pressing the buttons on screen, to choose which fragment to use
+                //setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
             }
 
@@ -97,6 +99,18 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG, "Main Activity disconnected from MatchService");
             }
         };
+    }
+
+    public void yesButtonSwipeClick(View view) {
+        Log.d("SwipeFragment", "yesButton clicked main");
+        SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
+        swipeFragment.swipeYes();
+    }
+
+    public void noButtonSwipeClick(View view) {
+        Log.d("SwipeFragment", "noButton clicked main");
+        SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
+        swipeFragment.swipeNo();
     }
 
     @Override

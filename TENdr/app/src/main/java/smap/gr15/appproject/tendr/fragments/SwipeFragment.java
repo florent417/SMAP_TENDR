@@ -4,10 +4,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,37 +19,26 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
-
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.services.MatchService;
 import smap.gr15.appproject.tendr.utils.SwipeCardAdapter;
-import smap.gr15.appproject.tendr.utils.SwipePagerAdapter;
+
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 public class SwipeFragment extends Fragment {
-    // REMOVE ?? Implement swipe fragment using: https://developer.android.com/training/animation/screen-slide-2#viewpager
     // Implement swipe fragment using: https://stackoverflow.com/questions/34620840/how-to-add-swipe-functionality-on-android-cardview
     // and: https://stackoverflow.com/questions/27293960/swipe-to-dismiss-for-recyclerview/30601554#30601554
-    private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private final String LOG = "SwipeFragment";
-    private int lastSwipeCardPosition = 1;
     private LinkedList<Profile> profilesToSwipe;
     private Profile currentProfileToSwipe;
-    private ArrayList<Profile> swipedProfiles = new ArrayList<Profile>();
+    private Profile ownProfile;
     private MatchService matchService;
-    private FragmentStateAdapter swipeFragmentStateAdapter;
-    private ViewPager2 viewPager;
     private RecyclerView swipeRecyclerView;
     private RecyclerView.Adapter swipeAdapter;
     private RecyclerView.LayoutManager swipeLayoutManager;
-    private Button yesButton;
-    private Button noButton;
     private TextView outOfSinglesMessage;
 
     public SwipeFragment(MatchService matchService) {
@@ -58,21 +50,21 @@ public class SwipeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return (ViewGroup) inflater.inflate(R.layout.fragment_main_swipe, container, false);
+        View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
+
+        setupView(view);
+
+        return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        setupView();
         setupRecyclerView();
     }
 
-    private void setupView() {
-        yesButton = getView().findViewById(R.id.button_main_fragment_yes);
-        noButton = getView().findViewById(R.id.button_main_fragment_no);
-        outOfSinglesMessage = getView().findViewById(R.id.textView_main_swipe_no_swipes);
+    private void setupView(View view) {
+        outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
     }
-
 
     private void setupRecyclerView() {
         swipeRecyclerView = getView().findViewById(R.id.main_swipe_card);
@@ -93,9 +85,9 @@ public class SwipeFragment extends Fragment {
 
                 Log.d(LOG, "onSwiped direction: " + direction);
                 if (direction == ItemTouchHelper.LEFT) {
-                    swipeLeft();
+                    swipeNo();
                 } else if (direction == ItemTouchHelper.RIGHT) {
-                    swipeRight();
+                    swipeYes();
                 }
             }
         };
@@ -103,51 +95,52 @@ public class SwipeFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(swipeRecyclerView);
     }
 
+    public void swipeYes() {
+        if (ownProfile.getMatches() != null && ownProfile.getMatches().size() < 10) {
+            String tempUserId = currentProfileToSwipe.getUserId();
 
-    /*private void setViewPager() {
-        viewPager = getView().findViewById(R.id.main_swipe_card);
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.d(LOG, "position: " + position + " positionOffset: " + positionOffset);
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-            }
+            removeUserFromSwipeQueue();
+            Log.d(LOG, "SwipeRight on " + currentProfileToSwipe);
 
-            @Override
-            public void onPageSelected(int position) {
-                if (position > lastSwipeCardPosition) {
-                    swipeLeft(lastSwipeCardPosition);
-                } else if (position < lastSwipeCardPosition) {
-                    swipeRight(lastSwipeCardPosition);
-                }
-                lastSwipeCardPosition = position; // update
-
-                swipedProfiles.add(profilesToSwipe.get(position));
-
-                super.onPageSelected(position);
-                String Br = "BR";
-            }
-        });
-    }*/
-
-    private void swipeRight() {
-        String tempUserId = currentProfileToSwipe.getUserId();
-
-        removeUserFromSwipeQueue();
-        Log.d(LOG, "SwipeRight on " + currentProfileToSwipe);
-
-
-
-        // call matchService.swipeRight(tempUserId)
+            matchService.swipeYes(tempUserId);
+        } else {
+            activateTooManyMatchesPopUp(getView());
+            refreshSameAdapter();
+        }
     }
 
-    private void swipeLeft() {
+    public void swipeNo() {
         String tempUserId = currentProfileToSwipe.getUserId();
 
         removeUserFromSwipeQueue();
         Log.d(LOG, "SwipeLeft on " + currentProfileToSwipe);
 
-        // call matchService.swipeRight(tempUserId)
+        matchService.swipeNo(tempUserId);
+    }
+
+    // based on: https://stackoverflow.com/questions/5944987/how-to-create-a-popup-window-popupwindow-in-android
+    public void activateTooManyMatchesPopUp(View view) {
+
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.fragment_swipe_popup, null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, -250);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                popupWindow.dismiss();
+                return true;
+            }
+        });
     }
 
     private void removeUserFromSwipeQueue() {
@@ -158,13 +151,18 @@ public class SwipeFragment extends Fragment {
     }
 
     private void updateAdapter() {
-        if (profilesToSwipe.size() != 0) {///FIXXXX
+        if (profilesToSwipe.size() != 0) {
             currentProfileToSwipe = profilesToSwipe.pop();
         } else {
-            // instead add empty card
             currentProfileToSwipe = createEmptyProfileForAdapter();
+            outOfSinglesMessage.setText(R.string.out_of_singles);
         }
 
+        swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
+        swipeRecyclerView.setAdapter(swipeAdapter);
+    }
+
+    private void refreshSameAdapter() {
         swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
         swipeRecyclerView.setAdapter(swipeAdapter);
     }
@@ -184,9 +182,12 @@ public class SwipeFragment extends Fragment {
             }, FETCH_PROFILE_WAIT_TIME_MS);
         } else {
             profilesToSwipe = matchService.getSwipeableProfiles();
+
+            ownProfile = matchService.getOwnProfile();
+
+            outOfSinglesMessage.setText("");
             if (profilesToSwipe.size() == 0) {
-                TextView outOfSingles = getView().findViewById(R.id.textView_main_swipe_no_swipes);
-                outOfSingles.setText(R.string.out_of_singles);
+                outOfSinglesMessage.setText(R.string.out_of_singles);
             }
             updateAdapter();
         }
