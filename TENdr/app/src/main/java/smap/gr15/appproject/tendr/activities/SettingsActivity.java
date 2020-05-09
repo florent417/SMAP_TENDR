@@ -154,7 +154,7 @@ public class SettingsActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), AuthenticationActivity.class);
                 startActivity(intent);
                 // TODO: use finishAffinity instead. Removes all prior activities in the stack
-                finish();
+                finishAffinity();
             }
         });
     }
