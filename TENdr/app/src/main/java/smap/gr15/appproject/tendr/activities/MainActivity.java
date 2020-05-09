@@ -10,11 +10,13 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.os.IBinder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.fragments.MatchesFragment;
 import smap.gr15.appproject.tendr.fragments.SwipeFragment;
@@ -41,6 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
+
+    @BindView(R.id.toolbar_main_swipe_chat)
+    Toolbar mainActivityFragmentsToolbar;
+
+    @BindView(R.id.button_main_swipe)
+    Button swipeFragmentButton;
+
+    @BindView(R.id.button_main_chat)
+    Button matchesFragmentButton;
 
     private MatchesFragment matchesFragment;
     private final String FRAGMENT_MATCHES = "fragment_matches";
@@ -126,5 +137,26 @@ public class MainActivity extends AppCompatActivity {
                     MatchService.class), matchServiceConnection, Context.BIND_AUTO_CREATE);
             matchServiceBound = true;
         }
+    }
+
+    /*
+    @OnClick(R.id.button_main_chat)
+    public void onMatchesClicked(){
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace();
+    }
+
+     */
+
+    @OnClick(R.id.button_main_chat)
+    public void onSwipeClicked(){
+        matchesFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
+        matchesFragment = new MatchesFragment(matchService);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
+                .commit();
     }
 }
