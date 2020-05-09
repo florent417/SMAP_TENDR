@@ -32,4 +32,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar_main_swipe_chat" />
 
+    <include
+        android:id="@+id/fragment_main_matches"
+        layout="@layout/fragment_matches"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_main_swipe_chat" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

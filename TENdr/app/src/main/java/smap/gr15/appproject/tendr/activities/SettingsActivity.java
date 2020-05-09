@@ -191,7 +191,10 @@ public class SettingsActivity extends AppCompatActivity {
                 profileService = ((ProfileService.ProfileServiceBinder)service).getService();
                 Log.d(TAG, "profile activity connected to profile service");
                 profileServiceBound = true;
+                // Remove the getUserId as it couldn't compile.... Ask the guys for help, don't
+                // push something that can't compile to master
                 profileService.getUserProfile(Auth.getUid(), userProfileOperationsListener);
+                //profileService.getUserProfile(userProfileOperationsListener);
             }
 
             @Override

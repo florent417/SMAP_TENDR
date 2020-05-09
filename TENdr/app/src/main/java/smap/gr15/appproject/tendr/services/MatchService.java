@@ -14,6 +14,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -30,6 +31,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -57,6 +59,9 @@ import smap.gr15.appproject.tendr.models.ProfileList;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_CHAT_COLLECTION;
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_REFERENCE;
+import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
+import static smap.gr15.appproject.tendr.utils.Globals.FRAGMENT;
+import static smap.gr15.appproject.tendr.utils.Globals.FRAGMENT_MATCH;
 import static smap.gr15.appproject.tendr.utils.Globals.comparedUser;
 import static smap.gr15.appproject.tendr.utils.Globals.firstUser;
 import static smap.gr15.appproject.tendr.utils.Globals.secondUser;
@@ -88,6 +93,8 @@ public class MatchService extends Service {
     private List<ConversationNotification> ConversationNotification = new ArrayList<>();
     private FirebaseAuth Auth;
     private static ListenerRegistration registrationlist;
+    private static ListenerRegistration registrationNewMatch;
+    private List<String> numberOfMatches = new ArrayList<>();
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -111,6 +118,10 @@ public class MatchService extends Service {
         fetchOwnProfileData(Auth.getUid());
     }
 
+    public List<Profile> getSuccessFullMatches(){
+        return successfulMatches;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Create notification channel
@@ -129,6 +140,7 @@ public class MatchService extends Service {
     public void onDestroy() {
         super.onDestroy();
         registrationlist.remove();
+        registrationNewMatch.remove();
         Log.d(LOG, "MatchService has been destroyed");
     }
 
@@ -458,7 +470,8 @@ public class MatchService extends Service {
                 NOTIFICATIONS_ID)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(contentIntent)
                 .build();
@@ -481,7 +494,31 @@ public class MatchService extends Service {
                 NOTIFICATIONS_ID)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentIntent)
+                .build();
+    }
+
+    //Used on New Match
+    private Notification setupNotificationsCombat(){
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(FRAGMENT, FRAGMENT_MATCH);
+
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(this, 0, intent, FLAG_UPDATE_CURRENT);
+
+        String title = "You have a new Match";
+        String text = "Don't let your match wait too long!";
+
+        return new NotificationCompat.Builder(this,
+                NOTIFICATIONS_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_logo_notification)
+                .setColor(0xdf4723)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(contentIntent)
                 .build();
@@ -502,6 +539,7 @@ public class MatchService extends Service {
         @Override
         public void run() {
             populateConversationList();
+            setupMatchNotificationListener();
         }
     };
 
@@ -647,6 +685,36 @@ public class MatchService extends Service {
         return isTop;
 
     }
+
+    private void setupMatchNotificationListener()
+    {
+        DocumentReference doc = db.collection(FIREBASE_Profiles_PATH).document(Auth.getUid());
+
+        registrationNewMatch = doc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+
+                Profile profile = documentSnapshot.toObject(Profile.class);
+
+                if(numberOfMatches.isEmpty())
+                {
+                    Log.d("numberOfMatchesempty", "isempty");
+                    numberOfMatches = profile.getMatches();
+                    return;
+                }
+
+                if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
+                {
+                    numberOfMatches = profile.getMatches();
+                    Notification notification;
+                    notification = setupNotificationsCombat();
+                    notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+                }
+            }
+        });
+    }
+
+
 
     private void updateUnwantedListInDB(ProfileList unwantedList) {
         String userId = Auth.getUid();

@@ -50,6 +50,7 @@ import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.utils.ChatMessageAdapter;
 import smap.gr15.appproject.tendr.utils.helpers;
 
+import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_KEY;
 import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
 
 // Inspired from this youtube Video https://www.youtube.com/watch?v=n8QWeqeUeA0
@@ -107,8 +108,8 @@ public class ChatActivity extends AppCompatActivity {
         setupFirebase();
 
         // This should be changed in production!
-        ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
-        Log.d("otherperson", ConversationOppositeUserID);
+        //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
+        ConversationOppositeUserID = getIntent().getStringExtra(CONVERSATION_KEY);
 
         getProfileOnStartup(Auth.getUid());
         getProfileOnStartup(ConversationOppositeUserID);
