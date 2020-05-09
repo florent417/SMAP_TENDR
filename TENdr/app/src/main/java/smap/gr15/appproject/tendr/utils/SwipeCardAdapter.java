@@ -13,7 +13,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import smap.gr15.appproject.tendr.R;
-import smap.gr15.appproject.tendr.fragments.SwipeCardFragment;
 import smap.gr15.appproject.tendr.models.Profile;
 
 public class SwipeCardAdapter extends RecyclerView.Adapter<SwipeCardAdapter.SwipeCardViewHolder> {

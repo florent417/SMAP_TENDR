@@ -30,7 +30,6 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 public class SwipeFragment extends Fragment {
     // Implement swipe fragment using: https://stackoverflow.com/questions/34620840/how-to-add-swipe-functionality-on-android-cardview
     // and: https://stackoverflow.com/questions/27293960/swipe-to-dismiss-for-recyclerview/30601554#30601554
-    private static final int NUM_SWIPE_CARDS = 10; // Set to size of profilesToSwipe
     private final int FETCH_PROFILE_WAIT_TIME_MS = 1000;
     private final String LOG = "SwipeFragment";
     private LinkedList<Profile> profilesToSwipe;
