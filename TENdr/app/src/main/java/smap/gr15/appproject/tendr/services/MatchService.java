@@ -788,7 +788,30 @@ public class MatchService extends Service {
         db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document().set(conversation).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                Log.d("PostComplete", "Successfully created new conversation!");
+                if(task.isSuccessful())
+                {
+                    db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).whereEqualTo("combinedUserUid", conversation.getCombinedUserUid()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if(task.isSuccessful())
+                            {
+                                String key = task.getResult().getDocuments().get(0).getId();
+
+                                Log.d("key", key);
+
+                                db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document(key).collection("chatMessages").add(new ChatMessage("Welcome to TENdr - Start out by saying something funny","TENdr", new Date())).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                        if(task.isSuccessful())
+                                        {
+                                            Log.d("complete", "complete");
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             }
         });
     }
