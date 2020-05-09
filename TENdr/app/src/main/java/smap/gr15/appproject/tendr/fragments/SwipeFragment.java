@@ -53,14 +53,14 @@ public class SwipeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
 
         setupView(view);
-        fetchSwipeableProfiles();
-
         return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         setupRecyclerView();
+        fetchSwipeableProfiles();
+
     }
 
     private void setupView(View view) {
@@ -160,6 +160,7 @@ public class SwipeFragment extends Fragment {
             outOfSinglesMessage.setText(R.string.out_of_singles);
         }
 
+        Log.d("currentprofile", currentProfileToSwipe.getUserId());
         swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
         swipeRecyclerView.setAdapter(swipeAdapter);
     }
