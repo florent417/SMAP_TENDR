@@ -89,7 +89,10 @@ public class MatchesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        updateMatchAdapter();
+    }
+    private void updateMatchAdapter(){
+        matchAdapter.updateData(convos, profiles);
     }
 
     @Override
@@ -109,7 +112,9 @@ public class MatchesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_matches, container, false);
         // Inflate the layout for this fragment
         this.view = view;
+        setupRecyclerView();
         getConversations();
+        getMatches();
 
         return view;
     }
@@ -128,6 +133,7 @@ public class MatchesFragment extends Fragment {
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         for (int i = 0; i < convos.size(); i++){
                             String docRef = documentSnapshots.get(i).getId();
+                            Log.d(TAG, "Docreference: " + docRef);
                             getLastMessage(i, docRef);
                         }
                     }
@@ -149,29 +155,33 @@ public class MatchesFragment extends Fragment {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
-                        Conversation conversation = convos.get(conversationIndex);
-                        conversation.setChatMessages(chatMessages);
-                        convos.set(conversationIndex, conversation);
-                        Log.d(TAG, Integer.toString(convos.size()));
-                        getMatches();
+                        if (task.isSuccessful()){
+                            List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
+                            Conversation conversation = convos.get(conversationIndex);
+                            conversation.setChatMessages(chatMessages);
+                            convos.set(conversationIndex, conversation);
+                            Log.d(TAG, "Messages chatmsgs is !null: " + String.valueOf(convos.get(conversationIndex).getChatMessages() != null));
+
+                        } else{
+                            Log.d(TAG, "Mesages exception: " + task.getException().toString());
+                        }
+
                     }
                 });
     }
 
-    private void setupRecyclerView(List<Conversation> conversations, List<Profile> matchedProfiles){
+    private void setupRecyclerView(){
         recyclerView = view.findViewById(R.id.RecyclerView_Matches_OverView);
-        layoutManager = new LinearLayoutManager(getContext());
+        layoutManager = new LinearLayoutManager(view.getContext());
         recyclerView.setLayoutManager(layoutManager);
-        Log.d(TAG, "MatchesFragment recycler messages size: " + conversations.get(0).getChatMessages().size());
-        matchAdapter = new MatchAdapter(getContext(), conversations, matchedProfiles);
+        matchAdapter = new MatchAdapter(view.getContext(), convos, profiles);
         matchAdapter.setOnMatchClickListener(onMatchClickListener);
         recyclerView.setAdapter(matchAdapter);
-        matchAdapter.notifyDataSetChanged();
     }
 
     private void getMatches(){
         if(!matchService.serviceIsInit()){
+            Log.d(TAG, "getMatches: convos size: " + convos.size());
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -182,7 +192,6 @@ public class MatchesFragment extends Fragment {
         } else{
             profiles = matchService.getSuccessFullMatches();
             //TODO: Think about adding a viewmodel instead
-            setupRecyclerView(convos, profiles);
         }
     }
 
