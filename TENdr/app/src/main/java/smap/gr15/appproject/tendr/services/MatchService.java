@@ -193,11 +193,17 @@ public class MatchService extends Service {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d(LOG, "Fetching wanted matches list of wanted match: " + document.getId() + " => " + document.getData());
                                 ProfileList wantedMatchesOfWantedMatch = document.toObject(ProfileList.class);
-                                for (String userIdOfWantedMatchWantedList : wantedMatchesOfWantedMatch.list){
-                                    if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
-                                        createMatchIfWithinLimit(wantedMatchUserId);
+                                if(wantedMatchesOfWantedMatch.list != null)
+                                {
+                                    for (String userIdOfWantedMatchWantedList : wantedMatchesOfWantedMatch.list){
+                                        Log.d("wanted", String.valueOf(wantedMatchesOfWantedMatch.list.size()));
+                                        Log.d("isthisnull??", String.valueOf(userIdOfWantedMatchWantedList));
+                                        if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
+                                            createMatchIfWithinLimit(wantedMatchUserId);
+                                        }
                                     }
                                 }
+
                             }
                         } else {
                             Log.d(LOG, "Error getting wanted matches list documents of wanted match: ", task.getException());
