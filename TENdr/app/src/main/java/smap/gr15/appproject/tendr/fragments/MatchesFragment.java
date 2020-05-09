@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -85,22 +86,10 @@ public class MatchesFragment extends Fragment {
         this.matchService = matchService;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MatchesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static MatchesFragment newInstance(String param1, String param2) {
-        MatchesFragment fragment = new MatchesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
     }
 
     @Override
@@ -111,8 +100,7 @@ public class MatchesFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        getMatches();
-        getConversations();
+
     }
 
     @Override
@@ -121,6 +109,8 @@ public class MatchesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_matches, container, false);
         // Inflate the layout for this fragment
         this.view = view;
+        getConversations();
+
         return view;
     }
 
@@ -164,6 +154,7 @@ public class MatchesFragment extends Fragment {
                         conversation.setChatMessages(chatMessages);
                         convos.set(conversationIndex, conversation);
                         Log.d(TAG, Integer.toString(convos.size()));
+                        getMatches();
                     }
                 });
     }
@@ -172,9 +163,11 @@ public class MatchesFragment extends Fragment {
         recyclerView = view.findViewById(R.id.RecyclerView_Matches_OverView);
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
+        Log.d(TAG, "MatchesFragment recycler messages size: " + conversations.get(0).getChatMessages().size());
         matchAdapter = new MatchAdapter(getContext(), conversations, matchedProfiles);
         matchAdapter.setOnMatchClickListener(onMatchClickListener);
         recyclerView.setAdapter(matchAdapter);
+        matchAdapter.notifyDataSetChanged();
     }
 
     private void getMatches(){

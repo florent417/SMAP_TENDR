@@ -2,6 +2,8 @@ package smap.gr15.appproject.tendr.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private final String LOG = "MainActivity";
     private final String SWIPE_FRAGMENT = "SwipeFragment";
     private SwipeFragment swipeFragment;
+    private FragmentTransaction fragmentTransaction;
+    private FragmentManager fragmentManager;
 
     @BindView(R.id.activity_auth_toolbar)
     Toolbar _toolbar;
@@ -44,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.imageButton_profile)
     ImageButton imageButton_profile;
 
-    @BindView(R.id.toolbar_main_swipe_chat)
-    Toolbar mainActivityFragmentsToolbar;
+    //@BindView(R.id.toolbar_main_swipe_chat)
+    //Toolbar mainActivityFragmentsToolbar;
 
     @BindView(R.id.button_main_swipe)
     Button swipeFragmentButton;
@@ -65,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         helpers.setupCustomActionBar(imageButton_settings, imageButton_main, imageButton_profile, this);
 
+        //mainActivityFragmentsToolbar.findViewById(R.id.toolbar_main_swipe_chat);
+
         setupMatchService();
     }
 
@@ -75,21 +81,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupSwipeFragment() {
+        fragmentManager = getSupportFragmentManager();
         swipeFragment = new SwipeFragment(matchService);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
                 .commit();
     }
 
+    /*
     private void setupMatchesFragment(){
         matchesFragment = new MatchesFragment(matchService);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
-                .commit();
+        fragmentTransaction
+                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES);
+                //.commit();
+    }
+
+     */
+
+    private void setupFragmentTransaction(){
+        fragmentTransaction = getSupportFragmentManager()
+                .beginTransaction();
     }
 
 
@@ -98,7 +111,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
+                setupFragmentTransaction();
+                matchesFragment = new MatchesFragment(matchService);
+                //matchesFragment = new MatchesFragment(matchService);
+
                 setupSwipeFragment();
+                //setupMatchesFragment();
                 // create at method that reacts to pressing the buttons on screen, to choose which fragment to use
                 //setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
@@ -150,13 +168,37 @@ public class MainActivity extends AppCompatActivity {
      */
 
     @OnClick(R.id.button_main_chat)
-    public void onSwipeClicked(){
-        matchesFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
-        matchesFragment = new MatchesFragment(matchService);
+    public void onChatClicked(){
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES)
-                .commit();
+        matchesFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
+        fragmentTransaction = fragmentManager.beginTransaction();
+
+        fragmentTransaction.replace(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+        //MatchesFragment swipeFragment = (MatchesFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_MATCHES);
+
+    }
+
+    @OnClick(R.id.button_main_swipe)
+    public void onSwipeClicked(){
+        swipeFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
+
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
+        //SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
+    }
+
+    @Override
+    public void onBackPressed(){
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1){
+            finish();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 }

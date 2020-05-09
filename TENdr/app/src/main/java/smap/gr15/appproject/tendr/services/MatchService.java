@@ -144,6 +144,7 @@ public class MatchService extends Service {
         Log.d(LOG, "MatchService has been destroyed");
     }
 
+
     public boolean serviceIsInit() {
         return successfulMatchesFetched && wantedMatchesFetched && unwantedMatchesFetched && swipeableProfilesFetched;
     }
