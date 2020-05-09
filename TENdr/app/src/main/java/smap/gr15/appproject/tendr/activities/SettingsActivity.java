@@ -153,6 +153,7 @@ public class SettingsActivity extends AppCompatActivity {
                 Auth.signOut();
                 Intent intent = new Intent(getApplicationContext(), AuthenticationActivity.class);
                 startActivity(intent);
+                // TODO: use finishAffinity instead. Removes all prior activities in the stack
                 finish();
             }
         });
@@ -191,10 +192,7 @@ public class SettingsActivity extends AppCompatActivity {
                 profileService = ((ProfileService.ProfileServiceBinder)service).getService();
                 Log.d(TAG, "profile activity connected to profile service");
                 profileServiceBound = true;
-                // Remove the getUserId as it couldn't compile.... Ask the guys for help, don't
-                // push something that can't compile to master
-                profileService.getUserProfile(Auth.getUid(), userProfileOperationsListener);
-                //profileService.getUserProfile(userProfileOperationsListener);
+                profileService.getUserProfile(userProfileOperationsListener);
             }
 
             @Override
@@ -225,6 +223,16 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public void onDeletePhotoSuccess(String imageUrl) {
+
+        }
+
+        @Override
+        public void onProfileDataSaved(String message) {
+
+        }
+
+        @Override
+        public void onOperationFailedMessage(String messageToShow) {
 
         }
     };
