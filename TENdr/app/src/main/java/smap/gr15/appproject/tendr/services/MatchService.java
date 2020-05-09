@@ -152,6 +152,10 @@ public class MatchService extends Service {
         return swipeableProfiles;
     }
 
+    public Profile getOwnProfile() {
+        return ownProfile;
+    }
+
     public void swipeNo(String noThanksUserId) {
         addProfileToUnwantedMatches(noThanksUserId);
         updateSwipeQueueIfNeeded();

@@ -35,6 +35,7 @@ public class SwipeFragment extends Fragment {
     private final String LOG = "SwipeFragment";
     private LinkedList<Profile> profilesToSwipe;
     private Profile currentProfileToSwipe;
+    private Profile ownProfile;
     private MatchService matchService;
     private RecyclerView swipeRecyclerView;
     private RecyclerView.Adapter swipeAdapter;
@@ -96,12 +97,17 @@ public class SwipeFragment extends Fragment {
     }
 
     public void swipeYes() {
-        String tempUserId = currentProfileToSwipe.getUserId();
+        if (ownProfile.getMatches() != null && ownProfile.getMatches().size() < 10) {
+            String tempUserId = currentProfileToSwipe.getUserId();
 
-        removeUserFromSwipeQueue();
-        Log.d(LOG, "SwipeRight on " + currentProfileToSwipe);
+            removeUserFromSwipeQueue();
+            Log.d(LOG, "SwipeRight on " + currentProfileToSwipe);
 
-        matchService.swipeYes(tempUserId);
+            matchService.swipeYes(tempUserId);
+        } else {
+            activateTooManyMatchesPopUp(getView());
+            refreshSameAdapter();
+        }
     }
 
     public void swipeNo() {
@@ -112,23 +118,21 @@ public class SwipeFragment extends Fragment {
 
         matchService.swipeNo(tempUserId);
     }
-/*
-    public void onButtonShowPopupWindowClick(View view) {
+
+    // based on: https://stackoverflow.com/questions/5944987/how-to-create-a-popup-window-popupwindow-in-android
+    public void activateTooManyMatchesPopUp(View view) {
 
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.fragment_swipe_popup, null);
-       // View popupView = inflater.inflate(R.layout.fra, container, false);
 
         // create the popup window
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
 
         // show the popup window
-        // which view you pass in doesn't matter, it is only used for the window tolken
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, -250);
 
         // dismiss the popup window when touched
         popupView.setOnTouchListener(new View.OnTouchListener() {
@@ -139,7 +143,7 @@ public class SwipeFragment extends Fragment {
             }
         });
     }
-*/
+
     private void removeUserFromSwipeQueue() {
         if (profilesToSwipe.size() < 2) {
             fetchSwipeableProfiles();
@@ -159,6 +163,11 @@ public class SwipeFragment extends Fragment {
         swipeRecyclerView.setAdapter(swipeAdapter);
     }
 
+    private void refreshSameAdapter() {
+        swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
+        swipeRecyclerView.setAdapter(swipeAdapter);
+    }
+
     private Profile createEmptyProfileForAdapter() {
         return null;
     }
@@ -174,6 +183,9 @@ public class SwipeFragment extends Fragment {
             }, FETCH_PROFILE_WAIT_TIME_MS);
         } else {
             profilesToSwipe = matchService.getSwipeableProfiles();
+
+            ownProfile = matchService.getOwnProfile();
+
             outOfSinglesMessage.setText("");
             if (profilesToSwipe.size() == 0) {
                 outOfSinglesMessage.setText(R.string.out_of_singles);
