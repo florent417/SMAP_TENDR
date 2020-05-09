@@ -12,4 +12,20 @@ public class ProfileList {
         this.userId = userId;
         this.list = new ArrayList<>();
     }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public ArrayList<String> getList() {
+        return list;
+    }
+
+    public void setList(ArrayList<String> list) {
+        this.list = list;
+    }
 }

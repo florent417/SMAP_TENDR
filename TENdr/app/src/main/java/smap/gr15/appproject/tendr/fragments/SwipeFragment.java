@@ -44,7 +44,7 @@ public class SwipeFragment extends Fragment {
     public SwipeFragment(MatchService matchService) {
         this.matchService = matchService;
 
-        fetchSwipeableProfiles();
+
     }
 
     @Nullable
@@ -53,6 +53,7 @@ public class SwipeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
 
         setupView(view);
+        fetchSwipeableProfiles();
 
         return view;
     }
@@ -100,7 +101,7 @@ public class SwipeFragment extends Fragment {
             String tempUserId = currentProfileToSwipe.getUserId();
 
             removeUserFromSwipeQueue();
-            Log.d(LOG, "SwipeRight on " + currentProfileToSwipe);
+            Log.d(LOG, "SwipeRight on " + currentProfileToSwipe.getUserId());
 
             matchService.swipeYes(tempUserId);
         } else {
@@ -154,6 +155,7 @@ public class SwipeFragment extends Fragment {
         if (profilesToSwipe.size() != 0) {
             currentProfileToSwipe = profilesToSwipe.pop();
         } else {
+            Log.d(LOG, "updateAdapter called: null prof created");
             currentProfileToSwipe = createEmptyProfileForAdapter();
             outOfSinglesMessage.setText(R.string.out_of_singles);
         }
@@ -177,10 +179,13 @@ public class SwipeFragment extends Fragment {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(LOG, "fetchSwipeableProfiles: if statement");
+
                     fetchSwipeableProfiles();
                 }
             }, FETCH_PROFILE_WAIT_TIME_MS);
         } else {
+            Log.d(LOG, "fetchSwipeableProfiles: else statement");
             profilesToSwipe = matchService.getSwipeableProfiles();
 
             ownProfile = matchService.getOwnProfile();

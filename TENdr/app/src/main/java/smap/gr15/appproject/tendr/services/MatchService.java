@@ -746,6 +746,7 @@ public class MatchService extends Service {
     private void updateWantedListInDB(ProfileList wantedList) {
         String userId = Auth.getUid();
 
+        Log.d(LOG, "ProfileList size: " + wantedList.list);
         db.collection(WANTED_MATCHES_DB).document(userId)
                 .set(wantedList, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
