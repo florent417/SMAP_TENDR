@@ -80,8 +80,8 @@ public class MatchService extends Service {
     private boolean unwantedMatchesFetched = false;
     private boolean swipeableProfilesFetched = false;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private ProfileList wantedMatches;
-    private ProfileList unwantedMatches;
+    private ProfileList wantedMatches = new ProfileList();
+    private ProfileList unwantedMatches = new ProfileList();
     private ArrayList<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -709,12 +709,16 @@ public class MatchService extends Service {
                     return;
                 }
 
+                //You cannot remove matches in current version
                 if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
                 {
                     numberOfMatches = profile.getMatches();
                     Notification notification;
                     notification = setupNotificationsCombat();
                     notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+
+                    //Create conversation
+
                 }
             }
         });
@@ -746,6 +750,7 @@ public class MatchService extends Service {
     private void updateWantedListInDB(ProfileList wantedList) {
         String userId = Auth.getUid();
 
+        Log.d(LOG, "ProfileList size: " + wantedList.list);
         db.collection(WANTED_MATCHES_DB).document(userId)
                 .set(wantedList, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
