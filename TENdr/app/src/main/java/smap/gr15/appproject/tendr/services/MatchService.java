@@ -80,8 +80,8 @@ public class MatchService extends Service {
     private boolean unwantedMatchesFetched = false;
     private boolean swipeableProfilesFetched = false;
     private LinkedList<Profile> swipeableProfiles = new LinkedList<Profile>();
-    private ProfileList wantedMatches;
-    private ProfileList unwantedMatches;
+    private ProfileList wantedMatches = new ProfileList();
+    private ProfileList unwantedMatches = new ProfileList();
     private ArrayList<Profile> successfulMatches = new ArrayList<Profile>();
     private Profile ownProfile;
     FirebaseFirestore db = FirebaseFirestore.getInstance();

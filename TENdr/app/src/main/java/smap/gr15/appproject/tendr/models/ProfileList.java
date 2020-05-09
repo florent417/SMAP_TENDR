@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class ProfileList {
     public String userId;
-    public ArrayList<String> list;
+    public ArrayList<String> list = new ArrayList<>();
 
     public ProfileList(){};
 
