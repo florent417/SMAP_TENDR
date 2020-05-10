@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.os.IBinder;
+import android.graphics.Color;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT)
                 .commit();
+        swipeFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
+
     }
 
     /*
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.button_main_chat)
     public void onChatClicked(){
-
+        swipeFragmentButton.setTextColor(Color.parseColor("#000000"));
         matchesFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
         fragmentTransaction = fragmentManager.beginTransaction();
 
@@ -182,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.button_main_swipe)
     public void onSwipeClicked(){
+        matchesFragmentButton.setTextColor(Color.parseColor("#000000"));
         swipeFragmentButton.setTextColor(getResources().getColor(R.color.colorButtons));
 
         fragmentTransaction = fragmentManager.beginTransaction();
