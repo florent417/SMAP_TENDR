@@ -163,9 +163,11 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         setResult(RESULT_OK);
         finish();
+
+        super.onBackPressed();
+
     }
 
     private void getProfileOnStartup(String Uid)
