@@ -201,6 +201,9 @@ public class MatchService extends Service {
                                         Log.d("isthisnull??", String.valueOf(userIdOfWantedMatchWantedList));
                                         if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
                                             createMatchIfWithinLimit(wantedMatchUserId);
+
+                                            //Create conversation
+                                            createNewConversation(Auth.getUid(), wantedMatchUserId);
                                         }
                                     }
                                 }
@@ -713,12 +716,18 @@ public class MatchService extends Service {
                 //You cannot remove matches in current version
                 if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
                 {
+                    // TODO: 09-05-2020 maybe we can use this later
+                    //List<String> tempMatches = profile.getMatches();
+                    //tempMatches.removeAll(numberOfMatches);
+                    //String currentMatch = tempMatches.get(0);
+
+
                     numberOfMatches = profile.getMatches();
                     Notification notification;
                     notification = setupNotificationsCombat();
                     notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
 
-                    //Create conversation
+
 
                 }
             }
@@ -768,6 +777,62 @@ public class MatchService extends Service {
                     }
                 });
 
+    }
+
+    private void createNewConversation(String myUserId, String matchUserId){
+
+        Conversation conversation = new Conversation();
+        conversation.setFirstUserId(matchUserId);
+        conversation.setSecondUserId(myUserId);
+        conversation.setCombinedUserUid(compareUsers(matchUserId,myUserId));
+
+
+        db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document().set(conversation).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful())
+                {
+                    db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).whereEqualTo("combinedUserUid", conversation.getCombinedUserUid()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if(task.isSuccessful())
+                            {
+                                String key = task.getResult().getDocuments().get(0).getId();
+
+                                Log.d("key", key);
+
+                                db.collection(Globals.FIREBASE_CONVERSATIONS_PATH).document(key).collection("chatMessages").add(new ChatMessage("Welcome to TENdr - Start out by saying something funny","TENdr", new Date())).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                        if(task.isSuccessful())
+                                        {
+                                            Log.d("complete", "complete");
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private String compareUsers(String user1, String user2)
+    {
+        int sizeOfUser = user1.compareTo(user2);
+        String combinedId = "";
+
+        if(sizeOfUser > 0)
+        {
+            combinedId = user1 + user2;
+        }
+        else
+        {
+            combinedId = user2 + user1;
+        }
+
+        return combinedId;
     }
 
 }
