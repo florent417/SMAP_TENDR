@@ -3,7 +3,6 @@ package smap.gr15.appproject.tendr.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -33,13 +31,11 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firestore.v1.Document;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,8 +43,7 @@ import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.ChatMessage;
 import smap.gr15.appproject.tendr.models.Conversation;
 import smap.gr15.appproject.tendr.models.Profile;
-import smap.gr15.appproject.tendr.utils.ChatMessageAdapter;
-import smap.gr15.appproject.tendr.utils.helpers;
+import smap.gr15.appproject.tendr.adapters.ChatMessageAdapter;
 
 import static smap.gr15.appproject.tendr.utils.Globals.CONVERSATION_KEY;
 import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;

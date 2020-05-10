@@ -1,4 +1,4 @@
-package smap.gr15.appproject.tendr.utils;
+package smap.gr15.appproject.tendr.adapters;
 
 import android.content.Context;
 import android.view.View;
@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
+import smap.gr15.appproject.tendr.utils.SwipeCard;
 
 public class SwipeCardAdapter extends RecyclerView.Adapter<SwipeCardAdapter.SwipeCardViewHolder> {
         private Context context;

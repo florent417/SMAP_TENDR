@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
 import smap.gr15.appproject.tendr.services.MatchService;
-import smap.gr15.appproject.tendr.utils.SwipeCardAdapter;
+import smap.gr15.appproject.tendr.adapters.SwipeCardAdapter;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
