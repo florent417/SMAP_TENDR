@@ -115,6 +115,26 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        getUserProfile(Auth.getUid());
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        profile = null;
+        profileService = null;
+        unbindService(profileServiceConnection);
+        profileServiceBound = false;
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+
+        setupProfileServiceConnection();
+
+        super.onRestart();
     }
 
     private void setupMediaPlayerForFunnySong()
@@ -162,15 +182,38 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("resume", "onresume called");
         setupMediaPlayerForFunnySong();
+    }
+
+    private void getUserProfile(String userid)
+    {
+        firestore.collection(FIREBASE_Profiles_PATH).document(userid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    Log.d("Successfully", "new user:" + Auth.getUid());
+
+                    profile = task.getResult().toObject(Profile.class);
+
+                    setupUserSpecificUI();
+                }
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
-        profileService = null;
-        unbindService(profileServiceConnection);
-        profileServiceBound = false;
         super.onDestroy();
+
+        if(profileService != null)
+        {
+            profile = null;
+            profileService = null;
+            unbindService(profileServiceConnection);
+            profileServiceBound = false;
+        }
     }
 
     @Override
@@ -192,13 +235,13 @@ public class SettingsActivity extends AppCompatActivity {
                 profileService = ((ProfileService.ProfileServiceBinder)service).getService();
                 Log.d(TAG, "profile activity connected to profile service");
                 profileServiceBound = true;
-                profileService.getUserProfile(userProfileOperationsListener);
+                getUserProfile(Auth.getUid());
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 profileService = null;
-                profileServiceBound = false;
+                //profileServiceBound = false;
             }
         };
     }
@@ -208,39 +251,12 @@ public class SettingsActivity extends AppCompatActivity {
         Auth = FirebaseAuth.getInstance();
     }
 
-    private ProfileService.UserProfileOperationsListener userProfileOperationsListener = new ProfileService.UserProfileOperationsListener() {
-        @Override
-        public void onGetProfileSuccess(Profile userProfile) {
-            profile = userProfile;
-            Log.d("called", "imgettingcalled");
-            setupUserSpecificUI();
-        }
-
-        @Override
-        public void onUploadPhotoSuccess(String imageUrl) {
-
-        }
-
-        @Override
-        public void onDeletePhotoSuccess(String imageUrl) {
-
-        }
-
-        @Override
-        public void onProfileDataSaved(String message) {
-
-        }
-
-        @Override
-        public void onOperationFailedMessage(String messageToShow) {
-
-        }
-    };
 
     private void bindToProfileService() {
         if (!profileServiceBound) {
             bindService(new Intent(SettingsActivity.this,
                     ProfileService.class), profileServiceConnection, Context.BIND_AUTO_CREATE);
+            profileServiceBound = true;
         }
     }
 

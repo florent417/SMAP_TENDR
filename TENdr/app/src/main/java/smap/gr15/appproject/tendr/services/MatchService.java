@@ -136,6 +136,7 @@ public class MatchService extends Service {
         // return START_STICKY
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -143,6 +144,7 @@ public class MatchService extends Service {
         registrationNewMatch.remove();
         Log.d(LOG, "MatchService has been destroyed");
     }
+
 
 
     public boolean serviceIsInit() {
@@ -712,9 +714,13 @@ public class MatchService extends Service {
                 if(numberOfMatches.isEmpty())
                 {
                     Log.d("numberOfMatchesempty", "isempty");
-                    if(profile.getMatches() != null)
-                    {
+
+
+                    try {
                         numberOfMatches = profile.getMatches();
+                    }catch (Exception err)
+                    {
+                        err.printStackTrace();
                     }
 
                     return;

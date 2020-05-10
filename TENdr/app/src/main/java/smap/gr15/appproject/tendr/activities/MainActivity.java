@@ -75,6 +75,22 @@ public class MainActivity extends AppCompatActivity {
         setupMatchService();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        if(matchService != null)
+        {
+            matchService = null;
+            unbindService(matchServiceConnection);
+            matchServiceBound = false;
+        }
+        super.onStop();
+    }
+
     private void setupMatchService() {
         startService(new Intent(MainActivity.this, MatchService.class));
         setupConnectionToMatchService();

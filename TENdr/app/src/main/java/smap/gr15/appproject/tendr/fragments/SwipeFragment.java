@@ -63,6 +63,15 @@ public class SwipeFragment extends Fragment {
 
     }
 
+    @Override
+    public void onStop() {
+        Log.d("myprofile", "iminhere");
+        ownProfile = null;
+        currentProfileToSwipe = null;
+        super.onStop();
+
+    }
+
     private void setupView(View view) {
         outOfSinglesMessage = view.findViewById(R.id.textView_main_swipe_no_swipes);
     }
