@@ -129,7 +129,11 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        registration.remove();
+        if(registration != null)
+        {
+            registration.remove();
+            registration = null;
+        }
     }
 
     private void setupOnClickListeners()
