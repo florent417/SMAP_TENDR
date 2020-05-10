@@ -108,7 +108,6 @@ public class MatchesFragment extends Fragment {
         return view;
     }
 
-    //sQcC5LAIdYcI8hVLKnngKWWYzq83H50pIFs3sRXu5HS7sYAaaIQYeX02
 
     private String compareUsers(String user1, String user2)
     {

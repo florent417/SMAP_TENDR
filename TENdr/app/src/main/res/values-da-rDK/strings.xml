@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TENdr</string>
+    <string name="LOGIN">LOGIN</string>
+    <string name="WELCOME">VELKOMMEN TIL TENdr - SIGN UP NEDENUNDER</string>
+    <string name="EmailHint">Email</string>
+    <string name="PasswordHint">Kodeord</string>
+    <string name="AgeHint">Alder</string>
+    <string name="firstname">Fornavn</string>
+    <string name="Occupation">Beskæftigelse</string>
+    <string name="City">By</string>
+    <string name="Country">Land</string>
+    <string name="SIGNUP">SIGN UP</string>
+    <string name="ALREADYUSER">Har du allerede en konto?</string>
+    <string name="Bio">Bio</string>
+    <string name="Gender">Køn</string>
+    <string name="Save">Gem</string>
+    <string name="matchname">matchnavn</string>
+    <string name="send_your_match_a_message">Send en besked</string>
+    <string name="send">Send</string>
+    <string name="nametext">navntext</string>
+    <string name="messagetext">beskedtext</string>
+    <string name="ProfilePreference">Vis mig</string>
+    <string name="male">Mand</string>
+    <string name="female">Dame</string>
+    <string name="location">Lokation</string>
+    <string name="country_of_residence">Land du bor i</string>
+    <string name="city_of_residence">"By du bor i "</string>
+    <string name="what_s_your_occupation">Hvad laver du til daglig?</string>
+    <string name="apply">Anvend</string>
+    <string name="timestamp">tidsstempel</string>
+    <string name="sign_out">Log ud</string>
+    <string name="swipe">Swipe</string>
+    <string name="chat">Chat</string>
+    <string name="sample_text">VI FLYVER</string>
+    <string name="profile_pic_description">Profil billede</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
+    <string name="hello_blank_fragment">Hej fra fragment</string>
+    <string name="out_of_singles">Vi er desværre ude af matches tæt på dig</string>
+    <string name="too_many_matches">Du har noget det maximum antal matches</string>
+</resources>
