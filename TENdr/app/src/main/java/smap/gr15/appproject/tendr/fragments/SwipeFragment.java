@@ -19,6 +19,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.LinkedList;
 import smap.gr15.appproject.tendr.R;
 import smap.gr15.appproject.tendr.models.Profile;
@@ -26,6 +33,7 @@ import smap.gr15.appproject.tendr.services.MatchService;
 import smap.gr15.appproject.tendr.utils.SwipeCardAdapter;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+import static smap.gr15.appproject.tendr.utils.Globals.FIREBASE_Profiles_PATH;
 
 public class SwipeFragment extends Fragment {
     // Implement swipe fragment using: https://stackoverflow.com/questions/34620840/how-to-add-swipe-functionality-on-android-cardview
@@ -40,6 +48,8 @@ public class SwipeFragment extends Fragment {
     private RecyclerView.Adapter swipeAdapter;
     private RecyclerView.LayoutManager swipeLayoutManager;
     private TextView outOfSinglesMessage;
+    private FirebaseAuth Auth;
+    private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     public SwipeFragment(MatchService matchService) {
         this.matchService = matchService;
@@ -52,8 +62,32 @@ public class SwipeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_swipe, container, false);
 
+        Auth = FirebaseAuth.getInstance();
+
         setupView(view);
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getUserProfile(Auth.getUid());
+    }
+
+    private void getUserProfile(String userid)
+    {
+        firestore.collection(FIREBASE_Profiles_PATH).document(userid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    Log.d("Successfully", "new user:" + Auth.getUid());
+
+                    ownProfile = task.getResult().toObject(Profile.class);
+
+                }
+            }
+        });
     }
 
     @Override
@@ -67,7 +101,6 @@ public class SwipeFragment extends Fragment {
     public void onStop() {
         Log.d("myprofile", "iminhere");
         ownProfile = null;
-        currentProfileToSwipe = null;
         super.onStop();
 
     }
@@ -106,6 +139,7 @@ public class SwipeFragment extends Fragment {
     }
 
     public void swipeYes() {
+        Log.d("ownprofileisnull", String.valueOf(ownProfile == null));
         if (ownProfile.getMatches() != null && ownProfile.getMatches().size() < 10) {
             String tempUserId = currentProfileToSwipe.getUserId();
 

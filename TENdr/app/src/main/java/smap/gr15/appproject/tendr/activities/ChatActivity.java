@@ -205,9 +205,16 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setMatchProfilePicture(ImageView imageView)
     {
-        String picture = matchProfile.getPictures() == null ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
+        String picture = null;
+        if(matchProfile.getPictures() != null && matchProfile.getPictures().size() > 0)
+        {
+            picture = matchProfile.getPictures().isEmpty() ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
+        }
 
-        Picasso.get().load(picture).into(imageView);
+        Picasso.get()
+                .load(picture)
+                .placeholder(android.R.drawable.sym_def_app_icon)
+                .into(imageView);
     }
 
 

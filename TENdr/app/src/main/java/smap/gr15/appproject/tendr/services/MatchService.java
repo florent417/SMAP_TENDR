@@ -177,6 +177,7 @@ public class MatchService extends Service {
     }
 
     public void swipeYes(String yesPleaseUserId) {
+        Log.d("swipeyescalled", "yes");
         addProfileToWantedMatches(yesPleaseUserId);
         updateSwipeQueueIfNeeded();
 
@@ -185,6 +186,9 @@ public class MatchService extends Service {
     }
 
     private void checkForMatch(String wantedMatchUserId) {
+
+        Log.d("checFormatches", String.valueOf(wantedMatchUserId));
+
         db.collection(WANTED_MATCHES_DB)
                 .whereEqualTo("userId", wantedMatchUserId)
                 .limit(1)
@@ -192,7 +196,9 @@ public class MatchService extends Service {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        Log.d("12345", "before");
                         if (task.isSuccessful()) {
+                            Log.d("12345", String.valueOf(task.getResult().size()));
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d(LOG, "Fetching wanted matches list of wanted match: " + document.getId() + " => " + document.getData());
                                 ProfileList wantedMatchesOfWantedMatch = document.toObject(ProfileList.class);
@@ -325,7 +331,8 @@ public class MatchService extends Service {
                                 Log.d(LOG, "Fetching wanted matches list item: " + document.getId() + " => " + document.getData());
                                 wantedMatches = document.toObject(ProfileList.class);
                             }
-                            if (wantedMatches == null) {
+                            if (wantedMatches == null || wantedMatches.userId == null) {
+                                wantedMatches.userId = Auth.getUid();
                                 updateWantedListInDB(new ProfileList(Auth.getUid())); // Should probably remove in release
                             }
                             wantedMatchesFetched = true;

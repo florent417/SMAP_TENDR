@@ -71,14 +71,28 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
         if(myProfile.getFirstName().equals(sender))
         {
-            String picture = myProfile.getPictures() == null ? "https://cdn6.f-cdn.com/contestentries/1376995/30494909/5b566bc71d308_thumbCard.jpg": myProfile.getPictures().get(0);
+            String picture = null;
+            if(myProfile.getPictures() != null && myProfile.getPictures().size() > 0)
+            {
+                picture = matchProfile.getPictures().isEmpty() ? "https://clipartart.com/images/2-year-old-boy-clipart-4.jpg": myProfile.getPictures().get(0);
+            }
 
-            Picasso.get().load(picture).into(imageView);
+            Picasso.get()
+                    .load(picture)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .into(imageView);
         }
         else{
-            String picture =  matchProfile.getPictures() == null ? "https://pbs.twimg.com/profile_images/749113295299239940/JmxNTCw1.jpg": matchProfile.getPictures().get(0);
+            String picture = null;
+            if(matchProfile.getPictures() != null && matchProfile.getPictures().size() > 0)
+            {
+                picture = matchProfile.getPictures().isEmpty() ? "https://clipartart.com/images/2-year-old-boy-clipart-4.jpg": matchProfile.getPictures().get(0);
+            }
 
-            Picasso.get().load(picture).into(imageView);
+            Picasso.get()
+                    .load(picture)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .into(imageView);
         }
     }
 
