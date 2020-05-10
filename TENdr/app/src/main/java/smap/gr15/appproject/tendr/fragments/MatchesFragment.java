@@ -1,5 +1,6 @@
 package smap.gr15.appproject.tendr.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -62,20 +63,11 @@ public class MatchesFragment extends Fragment {
     private List<Conversation> convos = new ArrayList<>();
     private List<Profile> profiles = new ArrayList<>();
     private final int GET_MATCHES_WAIT_TIME_MS = 1000;
+    private final static int CHAT_MESSAGE_REQUEST = 7;
 
     private View view = null;
 
     private FirebaseAuth Auth = FirebaseAuth.getInstance();
-
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
 
     public MatchesFragment() {
@@ -89,7 +81,6 @@ public class MatchesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        updateMatchAdapter();
     }
     private void updateMatchAdapter(){
         matchAdapter.updateData(convos, profiles);
@@ -98,11 +89,6 @@ public class MatchesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
 
     }
 
@@ -113,8 +99,9 @@ public class MatchesFragment extends Fragment {
         // Inflate the layout for this fragment
         this.view = view;
         setupRecyclerView();
-        getConversations();
         getMatches();
+        getConversations();
+
 
         return view;
     }
@@ -129,18 +116,22 @@ public class MatchesFragment extends Fragment {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        convos = task.getResult().toObjects(Conversation.class);
+                        List<Conversation> conversationsFromQuery = task.getResult().toObjects(Conversation.class);
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
-                        for (int i = 0; i < convos.size(); i++){
+                        if (convos.size() >= conversationsFromQuery.size()){
+                            convos.clear();
+                        }
+                        for (int i = 0; i < conversationsFromQuery.size(); i++){
+                            Log.d(TAG, "inside for loop convo query:");
                             String docRef = documentSnapshots.get(i).getId();
                             Log.d(TAG, "Docreference: " + docRef);
-                            getLastMessage(i, docRef);
+                            getLastMessage(conversationsFromQuery.get(i), docRef);
                         }
                     }
                 });
     }
 
-    private void getLastMessage(int conversationIndex, String conversationDocRef){
+    private void getLastMessage(Conversation conversation, String conversationDocRef){
         CollectionReference lastMsgRef = db
                 .collection(Globals.FIREBASE_CONVERSATIONS_PATH)
                 .document(conversationDocRef)
@@ -157,11 +148,11 @@ public class MatchesFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()){
                             List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
-                            Conversation conversation = convos.get(conversationIndex);
                             conversation.setChatMessages(chatMessages);
-                            convos.set(conversationIndex, conversation);
-                            Log.d(TAG, "Messages chatmsgs is !null: " + String.valueOf(convos.get(conversationIndex).getChatMessages() != null));
+                            convos.add(conversation);
 
+                            //convos.set(conversationIndex, conversation);
+                            updateMatchAdapter();
                         } else{
                             Log.d(TAG, "Mesages exception: " + task.getException().toString());
                         }
@@ -203,8 +194,16 @@ public class MatchesFragment extends Fragment {
 
             intent.putExtra(Globals.CONVERSATION_KEY, matchProfileUId);
 
-            startActivity(intent);
+            startActivityForResult(intent, CHAT_MESSAGE_REQUEST);
             // TODO: Find out what to do here, finish?
         }
     };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHAT_MESSAGE_REQUEST && resultCode == Activity.RESULT_OK){
+            getConversations();
+        }
+    }
 }

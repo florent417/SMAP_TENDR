@@ -62,7 +62,13 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // TODO: add for profile pictures as well
+        if(conversations != null && conversations.size() > 0){
+            Conversation currentConversation = conversations.get(position);
+            List<ChatMessage> conversationChatMessages = currentConversation.getChatMessages();
+            ChatMessage lastChatMsg = conversationChatMessages.get(conversationChatMessages.size()-1);
+            holder.lastMsgEditText.setText(lastChatMsg.getMessage());
+        }
+
         if (matchedProfiles != null && matchedProfiles.size() > 0){
             Profile currentProfile = matchedProfiles.get(position);
             String firstProfilePictureUrl=null;
@@ -74,13 +80,6 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
                     .load(firstProfilePictureUrl)
                     .placeholder(android.R.drawable.sym_def_app_icon)
                     .into(holder.profilePictureImageView);
-
-            if(conversations != null && conversations.size() > 0){
-                Conversation currentConversation = conversations.get(position);
-                List<ChatMessage> conversationChatMessages = currentConversation.getChatMessages();
-                ChatMessage lastChatMsg = conversationChatMessages.get(conversationChatMessages.size()-1);
-                holder.lastMsgEditText.setText(lastChatMsg.getMessage());
-            }
 
             holder.nameTextView.setText(currentProfile.getFirstName());
         }

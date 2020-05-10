@@ -144,6 +144,7 @@ public class ChatActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setResult(RESULT_OK);
                 finish();
             }
         });
@@ -158,6 +159,13 @@ public class ChatActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void getProfileOnStartup(String Uid)
