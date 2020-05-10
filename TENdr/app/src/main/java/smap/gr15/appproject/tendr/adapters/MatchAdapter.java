@@ -39,6 +39,12 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
         this.onMatchClickListener = onMatchClickListener;
     }
 
+    public void updateData(List<Conversation> conversations, List<Profile> profiles){
+        this.matchedProfiles = profiles;
+        this.conversations = conversations;
+        notifyDataSetChanged();
+    }
+
     public MatchAdapter(Context context, List<Conversation> conversations, List<Profile> matchedProfiles){
         this.context = context;
         this.conversations = conversations;
@@ -56,27 +62,27 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // TODO: add for profile pictures as well
-
-        Profile currentProfile = matchedProfiles.get(position);
-        String firstProfilePictureUrl=null;
-        if (currentProfile.getPictures() != null && currentProfile.getPictures().size() > 0) {
-            firstProfilePictureUrl = currentProfile.getPictures().get(0);
+        if(conversations != null && conversations.size() > 0){
+            Conversation currentConversation = conversations.get(position);
+            List<ChatMessage> conversationChatMessages = currentConversation.getChatMessages();
+            ChatMessage lastChatMsg = conversationChatMessages.get(conversationChatMessages.size()-1);
+            holder.lastMsgEditText.setText(lastChatMsg.getMessage());
         }
 
-        Picasso.get()
-                .load(firstProfilePictureUrl)
-                .placeholder(android.R.drawable.sym_def_app_icon)
-                .into(holder.profilePictureImageView);
+        if (matchedProfiles != null && matchedProfiles.size() > 0){
+            Profile currentProfile = matchedProfiles.get(position);
+            String firstProfilePictureUrl=null;
+            if (currentProfile.getPictures() != null && currentProfile.getPictures().size() > 0) {
+                firstProfilePictureUrl = currentProfile.getPictures().get(0);
+            }
 
-        Conversation currentConversation = conversations.get(position);
-        List<ChatMessage> conversationChatMessages = currentConversation.getChatMessages();
-        ChatMessage lastChatMsg = conversationChatMessages.get(conversationChatMessages.size()-1);
-        holder.lastMsgEditText.setText(lastChatMsg.getMessage());
+            Picasso.get()
+                    .load(firstProfilePictureUrl)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .into(holder.profilePictureImageView);
 
-
-
-        holder.nameTextView.setText(currentProfile.getFirstName());
+            holder.nameTextView.setText(currentProfile.getFirstName());
+        }
     }
 
     @Override

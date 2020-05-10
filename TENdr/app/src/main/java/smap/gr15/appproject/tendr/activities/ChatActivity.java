@@ -129,7 +129,11 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        registration.remove();
+        if(registration != null)
+        {
+            registration.remove();
+            registration = null;
+        }
     }
 
     private void setupOnClickListeners()
@@ -144,6 +148,7 @@ public class ChatActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setResult(RESULT_OK);
                 finish();
             }
         });
@@ -158,6 +163,15 @@ public class ChatActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_OK);
+        finish();
+
+        super.onBackPressed();
+
     }
 
     private void getProfileOnStartup(String Uid)
