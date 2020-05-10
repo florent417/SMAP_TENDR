@@ -621,6 +621,8 @@ public class MatchService extends Service {
                     return;
                 }
 
+                Log.d("key", key);
+
                 ChatMessage doc = queryDocumentSnapshots.getDocumentChanges().get(0).getDocument().toObject(ChatMessage.class);
 
                 String id = getMatchUserUid(key);
@@ -704,12 +706,17 @@ public class MatchService extends Service {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 
-                Profile profile = documentSnapshot.toObject(Profile.class);
+                Profile profile = new Profile();
+                profile = documentSnapshot.toObject(Profile.class);
 
                 if(numberOfMatches.isEmpty())
                 {
                     Log.d("numberOfMatchesempty", "isempty");
-                    numberOfMatches = profile.getMatches();
+                    if(profile.getMatches() != null)
+                    {
+                        numberOfMatches = profile.getMatches();
+                    }
+
                     return;
                 }
 

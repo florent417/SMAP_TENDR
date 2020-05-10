@@ -110,6 +110,7 @@ public class ChatActivity extends AppCompatActivity {
         // This should be changed in production!
         //ConversationOppositeUserID = getIntent().getStringExtra("ConversationKey");
         ConversationOppositeUserID = getIntent().getStringExtra(CONVERSATION_KEY);
+        Log.d("conkey", ConversationOppositeUserID);
 
         getProfileOnStartup(Auth.getUid());
         getProfileOnStartup(ConversationOppositeUserID);

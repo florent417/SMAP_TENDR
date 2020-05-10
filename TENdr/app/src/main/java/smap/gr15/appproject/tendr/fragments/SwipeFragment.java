@@ -101,7 +101,7 @@ public class SwipeFragment extends Fragment {
             String tempUserId = currentProfileToSwipe.getUserId();
 
             removeUserFromSwipeQueue();
-            Log.d(LOG, "SwipeRight on " + currentProfileToSwipe.getUserId());
+            //Log.d(LOG, "SwipeRight on " + currentProfileToSwipe.getUserId());
 
             matchService.swipeYes(tempUserId);
         } else {
@@ -160,7 +160,6 @@ public class SwipeFragment extends Fragment {
             outOfSinglesMessage.setText(R.string.out_of_singles);
         }
 
-        Log.d("currentprofile", currentProfileToSwipe.getUserId());
         swipeAdapter = new SwipeCardAdapter(getContext(), currentProfileToSwipe);
         swipeRecyclerView.setAdapter(swipeAdapter);
     }
