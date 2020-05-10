@@ -118,20 +118,17 @@ public class MatchesFragment extends Fragment {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         List<Conversation> conversationsFromQuery = task.getResult().toObjects(Conversation.class);
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
-                        if (convos.size() >= conversationsFromQuery.size()){
-                            convos.clear();
-                        }
                         for (int i = 0; i < conversationsFromQuery.size(); i++){
                             Log.d(TAG, "inside for loop convo query:");
                             String docRef = documentSnapshots.get(i).getId();
                             Log.d(TAG, "Docreference: " + docRef);
-                            getLastMessage(conversationsFromQuery.get(i), docRef);
+                            getLastMessage(conversationsFromQuery.get(i), docRef, conversationsFromQuery);
                         }
                     }
                 });
     }
 
-    private void getLastMessage(Conversation conversation, String conversationDocRef){
+    private void getLastMessage(Conversation conversation, String conversationDocRef, List<Conversation> tempConvos){
         CollectionReference lastMsgRef = db
                 .collection(Globals.FIREBASE_CONVERSATIONS_PATH)
                 .document(conversationDocRef)
@@ -147,6 +144,9 @@ public class MatchesFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()){
+                            if (convos.size() >= tempConvos.size()){
+                                convos.clear();
+                            }
                             List<ChatMessage> chatMessages = task.getResult().toObjects(ChatMessage.class);
                             conversation.setChatMessages(chatMessages);
                             convos.add(conversation);
