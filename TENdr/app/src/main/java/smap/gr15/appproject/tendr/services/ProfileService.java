@@ -86,7 +86,6 @@ public class ProfileService extends Service {
         });
     }
 
-    // TODO: Change userid to check on runtime
     public void editUserProfile(Profile userProfile, UserProfileOperationsListener listener){
         db.collection(Globals.FIREBASE_Profiles_PATH)
                 .document(currentLoggedInUserId).set(userProfile)

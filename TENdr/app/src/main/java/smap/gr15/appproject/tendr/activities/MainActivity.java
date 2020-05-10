@@ -92,17 +92,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /*
-    private void setupMatchesFragment(){
-        matchesFragment = new MatchesFragment(matchService);
-
-        fragmentTransaction
-                .add(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES);
-                //.commit();
-    }
-
-     */
-
     private void setupFragmentTransaction(){
         fragmentTransaction = getSupportFragmentManager()
                 .beginTransaction();
@@ -116,12 +105,8 @@ public class MainActivity extends AppCompatActivity {
                 matchService = ((MatchService.MatchServiceBinder)service).getService();
                 setupFragmentTransaction();
                 matchesFragment = new MatchesFragment(matchService);
-                //matchesFragment = new MatchesFragment(matchService);
 
                 setupSwipeFragment();
-                //setupMatchesFragment();
-                // create at method that reacts to pressing the buttons on screen, to choose which fragment to use
-                //setupMatchesFragment();
                 Log.d(LOG, "Main Activity connected to MatchService");
             }
 
@@ -160,16 +145,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*
-    @OnClick(R.id.button_main_chat)
-    public void onMatchesClicked(){
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace();
-    }
-
-     */
-
     @OnClick(R.id.button_main_chat)
     public void onChatClicked(){
         swipeFragmentButton.setTextColor(Color.parseColor("#000000"));
@@ -179,8 +154,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.fragment_main_swipe, matchesFragment, FRAGMENT_MATCHES);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-        //MatchesFragment swipeFragment = (MatchesFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_MATCHES);
-
     }
 
     @OnClick(R.id.button_main_swipe)
@@ -192,8 +165,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.fragment_main_swipe, swipeFragment, SWIPE_FRAGMENT);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
-        //SwipeFragment swipeFragment = (SwipeFragment) getSupportFragmentManager().findFragmentByTag(SWIPE_FRAGMENT);
     }
 
     @Override
