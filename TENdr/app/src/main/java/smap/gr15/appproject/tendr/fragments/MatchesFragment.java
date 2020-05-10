@@ -136,7 +136,15 @@ public class MatchesFragment extends Fragment {
                 {
                     Profile myProfile = task.getResult().toObject(Profile.class);
 
-                    List<String> mymatches = myProfile.getMatches();
+                    List<String> mymatches = new ArrayList<>();
+
+                    if(!myProfile.getMatches().isEmpty() || myProfile.getMatches() == null)
+                    {
+                        mymatches = myProfile.getMatches();
+                    }
+                    else{
+                        mymatches.add("sometestdata");
+                    }
 
                     for (String match : mymatches)
                     {
