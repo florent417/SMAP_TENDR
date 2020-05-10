@@ -1,4 +1,4 @@
-package smap.gr15.appproject.tendr.adapters;
+package smap.gr15.appproject.tendr.utils;
 
 import android.content.Context;
 import android.view.LayoutInflater;
