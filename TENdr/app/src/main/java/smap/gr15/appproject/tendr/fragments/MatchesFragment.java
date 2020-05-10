@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +65,7 @@ public class MatchesFragment extends Fragment {
     private List<Profile> profiles = new ArrayList<>();
     private final int GET_MATCHES_WAIT_TIME_MS = 1000;
     private final static int CHAT_MESSAGE_REQUEST = 7;
+    private List<String> combinedUserId = new ArrayList<>();
 
     private View view = null;
 
@@ -108,26 +110,61 @@ public class MatchesFragment extends Fragment {
 
     //sQcC5LAIdYcI8hVLKnngKWWYzq83H50pIFs3sRXu5HS7sYAaaIQYeX02
 
-    private void getConversations(){
-        CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
-        Query getConvosQuery = findMatches
-                .whereGreaterThanOrEqualTo("combinedUserUid", Auth.getUid())
-                .whereLessThanOrEqualTo("combinedUserUid", Auth.getUid() + JAVA_UNICODE_ESCAPE_CHAR);
+    private String compareUsers(String user1, String user2)
+    {
+        int sizeOfUser = user1.compareTo(user2);
+        String combinedId = "";
 
-        getConvosQuery.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        List<Conversation> conversationsFromQuery = task.getResult().toObjects(Conversation.class);
-                        List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
-                        for (int i = 0; i < conversationsFromQuery.size(); i++){
-                            Log.d(TAG, "inside for loop convo query:");
-                            String docRef = documentSnapshots.get(i).getId();
-                            Log.d(TAG, "Docreference: " + docRef);
-                            getLastMessage(conversationsFromQuery.get(i), docRef, conversationsFromQuery);
-                        }
+        if(sizeOfUser > 0)
+        {
+            combinedId = user1 + user2;
+        }
+        else
+        {
+            combinedId = user2 + user1;
+        }
+
+        return combinedId;
+    }
+
+    private void getConversations(){
+
+        db.collection(Globals.FIREBASE_Profiles_PATH).document(Auth.getUid()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    Profile myProfile = task.getResult().toObject(Profile.class);
+
+                    List<String> mymatches = myProfile.getMatches();
+
+                    for (String match : mymatches)
+                    {
+                        combinedUserId.add(compareUsers(Auth.getUid(), match));
                     }
-                });
+
+                    CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
+                    Query getConvosQuery = findMatches
+                            .whereIn("combinedUserUid", combinedUserId);
+
+                    getConvosQuery.get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    List<Conversation> conversationsFromQuery = task.getResult().toObjects(Conversation.class);
+                                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                                    for (int i = 0; i < conversationsFromQuery.size(); i++){
+                                        Log.d(TAG, "inside for loop convo query:");
+                                        String docRef = documentSnapshots.get(i).getId();
+                                        Log.d(TAG, "Docreference: " + docRef);
+                                        getLastMessage(conversationsFromQuery.get(i), docRef, conversationsFromQuery);
+                                    }
+                                }
+                            });
+
+                }
+            }
+        });
     }
 
     private void getLastMessage(Conversation conversation, String conversationDocRef, List<Conversation> tempConvos){

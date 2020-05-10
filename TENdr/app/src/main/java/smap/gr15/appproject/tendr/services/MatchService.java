@@ -210,8 +210,6 @@ public class MatchService extends Service {
                                         if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
                                             createMatchIfWithinLimit(wantedMatchUserId);
 
-                                            //Create conversation
-                                            createNewConversation(Auth.getUid(), wantedMatchUserId);
                                         }
                                     }
                                 }
@@ -250,6 +248,9 @@ public class MatchService extends Service {
                                 ownMatches.add(matchProfile.getUserId());
                                 ownProfile.setMatches(ownMatches);
                                 updateProfileInDB(ownProfile);
+
+                                //Create conversation
+                                createNewConversation(Auth.getUid(), matchProfile.getUserId());
                             }
 
                         } else {
@@ -309,13 +310,19 @@ public class MatchService extends Service {
     }
 
     private void addProfileToWantedMatches(String userId) {
-        wantedMatches.list.add(userId);
-        if (wantedMatches.list.size() >= WANTED_MATCHES_LIMIT)
+        if(wantedMatches.list.contains(userId))
         {
-            wantedMatches.list.remove(wantedMatches.list.size());
-        }
 
-        updateWantedListInDB(wantedMatches);
+        }
+        else{
+            wantedMatches.list.add(userId);
+            if (wantedMatches.list.size() >= WANTED_MATCHES_LIMIT)
+            {
+                wantedMatches.list.remove(wantedMatches.list.size());
+            }
+
+            updateWantedListInDB(wantedMatches);
+        }
     }
 
     private void fetchWantedMatches(String userId) {
