@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="smap.gr15.appproject.tendr">
+    package="smap.gr15.appproject.tendr" >
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>
 
@@ -11,18 +11,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.ChatActivity"/>
-        <activity android:name=".activities.ProfileActivity"/>
-        <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.AuthenticationActivity" >
+        <activity android:name=".activities.ChatActivity" android:screenOrientation="sensorPortrait">
+
+        </activity>
+        <activity android:name=".activities.ProfileActivity" android:screenOrientation="sensorPortrait"/>
+        <activity android:name=".activities.SettingsActivity" android:screenOrientation="sensorPortrait"/>
+        <activity android:name=".activities.AuthenticationActivity" android:screenOrientation="sensorPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity"/>
-        <service android:name=".services.MatchService" />
-        <service android:name=".services.ProfileService" />
+        <activity android:name=".activities.MainActivity" android:screenOrientation="sensorPortrait"/>
+        <service android:name=".services.MatchService"/>
+        <service android:name=".services.ProfileService"/>
     </application>
 
 </manifest>

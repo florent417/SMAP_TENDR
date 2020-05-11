@@ -74,7 +74,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             String picture = null;
             if(myProfile.getPictures() != null && myProfile.getPictures().size() > 0)
             {
-                picture = matchProfile.getPictures().isEmpty() ? "https://clipartart.com/images/2-year-old-boy-clipart-4.jpg": myProfile.getPictures().get(0);
+                picture = myProfile.getPictures().isEmpty() ? "https://clipartart.com/images/2-year-old-boy-clipart-4.jpg": myProfile.getPictures().get(0);
             }
 
             Picasso.get()
