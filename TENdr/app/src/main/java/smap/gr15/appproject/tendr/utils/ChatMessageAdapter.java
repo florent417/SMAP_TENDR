@@ -82,6 +82,14 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                     .placeholder(android.R.drawable.sym_def_app_icon)
                     .into(imageView);
         }
+        else if(sender.equals("TENdr"))
+        {
+            String picture = null;
+            Picasso.get()
+                    .load(picture)
+                    .placeholder(android.R.drawable.alert_dark_frame)
+                    .into(imageView);
+        }
         else{
             String picture = null;
             if(matchProfile.getPictures() != null && matchProfile.getPictures().size() > 0)
