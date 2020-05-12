@@ -147,7 +147,10 @@ public class MatchesFragment extends Fragment {
 
                     for (String match : mymatches)
                     {
-                        combinedUserId.add(compareUsers(Auth.getUid(), match));
+                        if(!combinedUserId.contains(compareUsers(Auth.getUid(), match)))
+                        {
+                            combinedUserId.add(compareUsers(Auth.getUid(), match));
+                        }
                     }
 
                     CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
