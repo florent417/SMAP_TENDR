@@ -87,7 +87,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             String picture = null;
             Picasso.get()
                     .load(picture)
-                    .placeholder(android.R.drawable.alert_dark_frame)
+                    .placeholder(R.drawable.ic_logo)
                     .into(imageView);
         }
         else{
