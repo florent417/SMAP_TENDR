@@ -207,7 +207,7 @@ public class MatchService extends Service {
                                     for (String userIdOfWantedMatchWantedList : wantedMatchesOfWantedMatch.list){
                                         Log.d("wanted", String.valueOf(wantedMatchesOfWantedMatch.list.size()));
                                         Log.d("isthisnull??", String.valueOf(userIdOfWantedMatchWantedList));
-                                        if (userIdOfWantedMatchWantedList.equals(Auth.getUid())) {
+                                        if (userIdOfWantedMatchWantedList.equals(Auth.getUid()) && !ownProfile.getMatches().contains(wantedMatchUserId)) {
                                             createMatchIfWithinLimit(wantedMatchUserId);
 
                                         }
