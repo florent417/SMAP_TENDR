@@ -95,6 +95,7 @@ public class MatchService extends Service {
     private static ListenerRegistration registrationlist;
     private static ListenerRegistration registrationNewMatch;
     private List<String> numberOfMatches = new ArrayList<>();
+    private boolean firstTimeEvent = true;
 
     public class MatchServiceBinder extends Binder {
         public MatchService getService() { return MatchService.this; }
@@ -122,6 +123,10 @@ public class MatchService extends Service {
         return successfulMatches;
     }
 
+    private void addSuccessFullMatches(Profile profile){
+        successfulMatches.add(profile);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Create notification channel
@@ -142,6 +147,7 @@ public class MatchService extends Service {
         super.onDestroy();
         registrationlist.remove();
         registrationNewMatch.remove();
+        firstTimeEvent = true;
         Log.d(LOG, "MatchService has been destroyed");
     }
 
@@ -725,34 +731,41 @@ public class MatchService extends Service {
                 Profile profile = new Profile();
                 profile = documentSnapshot.toObject(Profile.class);
 
-                if(numberOfMatches.isEmpty())
+                if(firstTimeEvent)
                 {
-                    Log.d("numberOfMatchesempty", "isempty");
-
-
-                    try {
-                        numberOfMatches = profile.getMatches();
-                    }catch (Exception err)
-                    {
-                        err.printStackTrace();
-                    }
-
+                    numberOfMatches = profile.getMatches();
+                    firstTimeEvent = false;
                     return;
                 }
+
+                Log.d("iminhere1", "here");
 
                 //You cannot remove matches in current version
                 if(numberOfMatches.size() != profile.getMatches().size() && profile.getMatches().size() > numberOfMatches.size())
                 {
                     // TODO: 09-05-2020 maybe we can use this later
-                    //List<String> tempMatches = profile.getMatches();
-                    //tempMatches.removeAll(numberOfMatches);
-                    //String currentMatch = tempMatches.get(0);
+                    List<String> tempMatches = profile.getMatches();
+                    tempMatches.removeAll(numberOfMatches);
+                    String currentMatch = tempMatches.get(0);
+
+                    db.collection(PROFILES_DB).document(currentMatch).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if(task.isSuccessful())
+                            {
+                                addSuccessFullMatches(task.getResult().toObject(Profile.class));
+
+                                Log.d("iminhere2", "here");
+
+                                Notification notification;
+                                notification = setupNotificationsCombat();
+                                notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
+                            }
+
+                        }
+                    });
 
 
-                    numberOfMatches = profile.getMatches();
-                    Notification notification;
-                    notification = setupNotificationsCombat();
-                    notificationManagerCompat.notify(NOTIFICATIONS_ID_INTEGER, notification);
 
 
 
