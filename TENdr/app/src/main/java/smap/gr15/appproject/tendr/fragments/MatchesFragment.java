@@ -145,13 +145,20 @@ public class MatchesFragment extends Fragment {
                         mymatches.add("sometestdata");
                     }
 
+                    Log.d("mymatches", String.valueOf(mymatches.size()));
+
                     for (String match : mymatches)
                     {
+                        Log.d("compareu", compareUsers(Auth.getUid(), match));
+                        Log.d("compareuu", compareUsers(match, Auth.getUid()));
                         if(!combinedUserId.contains(compareUsers(Auth.getUid(), match)))
                         {
                             combinedUserId.add(compareUsers(Auth.getUid(), match));
                         }
                     }
+
+                    Log.d("combienduseridlen", String.valueOf(combinedUserId.size()));
+                    Log.d("combienduseridname", combinedUserId.get(0));
 
                     CollectionReference findMatches = db.collection(Globals.FIREBASE_CONVERSATIONS_PATH);
                     Query getConvosQuery = findMatches
